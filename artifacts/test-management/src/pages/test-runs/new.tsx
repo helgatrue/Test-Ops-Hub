@@ -51,6 +51,7 @@ export default function TestRunNew() {
     }
 
     createRun.mutate({
+      projectId: id,
       data: {
         name,
         testCaseIds: selectedTests

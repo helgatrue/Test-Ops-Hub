@@ -9,6 +9,7 @@ import ProjectsList from "@/pages/projects/list";
 import ProjectNew from "@/pages/projects/new";
 import ProjectDetail from "@/pages/projects/detail";
 import TestCaseNew from "@/pages/test-cases/new";
+import TestCaseEdit from "@/pages/test-cases/edit";
 import TestCaseDetail from "@/pages/test-cases/detail";
 import TestRunNew from "@/pages/test-runs/new";
 import TestRunDetail from "@/pages/test-runs/detail";
@@ -25,6 +26,7 @@ function Router() {
         <Route path="/projects/new" component={ProjectNew} />
         <Route path="/projects/:projectId" component={ProjectDetail} />
         <Route path="/projects/:projectId/test-cases/new" component={TestCaseNew} />
+        <Route path="/projects/:projectId/test-cases/:testCaseId/edit" component={TestCaseEdit} />
         <Route path="/projects/:projectId/test-cases/:testCaseId" component={TestCaseDetail} />
         <Route path="/projects/:projectId/test-runs/new" component={TestRunNew} />
         <Route path="/projects/:projectId/test-runs/:testRunId" component={TestRunDetail} />

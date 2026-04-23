@@ -26,8 +26,9 @@ export default function TestRunDetail() {
 
   const handleStatusChange = (resultId: number, status: "passed" | "failed" | "skipped" | "blocked") => {
     updateResult.mutate({
+      projectId: pId,
       testRunId: trId,
-      testResultId: resultId,
+      resultId: resultId,
       data: { status }
     }, {
       onSuccess: () => {

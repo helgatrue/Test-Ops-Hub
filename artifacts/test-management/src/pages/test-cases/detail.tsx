@@ -1,28 +1,86 @@
-import { useParams, Link } from "wouter";
-import { useGetTestCase, getGetTestCaseQueryKey } from "@workspace/api-client-react";
-import { ArrowLeft, Edit } from "lucide-react";
+import { useParams, Link, useLocation } from "wouter";
+import {
+  useGetTestCase,
+  useDeleteTestCase,
+  getGetTestCaseQueryKey,
+  getListTestCasesQueryKey,
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PriorityBadge } from "@/components/ui/status-badge";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function TestCaseDetail() {
-  const { projectId, testCaseId } = useParams<{ projectId: string, testCaseId: string }>();
+  const { projectId, testCaseId } = useParams<{
+    projectId: string;
+    testCaseId: string;
+  }>();
   const pId = parseInt(projectId, 10);
   const tcId = parseInt(testCaseId, 10);
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: tc, isLoading } = useGetTestCase(pId, tcId, {
-    query: { enabled: !!(pId && tcId), queryKey: getGetTestCaseQueryKey(pId, tcId) }
+    query: {
+      enabled: !!(pId && tcId),
+      queryKey: getGetTestCaseQueryKey(pId, tcId),
+    },
   });
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading test case...</div>;
-  if (!tc) return <div className="p-8 text-center text-destructive">Test case not found</div>;
+  const deleteTestCase = useDeleteTestCase();
+
+  const handleDelete = () => {
+    deleteTestCase.mutate(
+      { projectId: pId, testCaseId: tcId },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListTestCasesQueryKey(pId, {}) });
+          toast({ title: "Test case deleted" });
+          setLocation(`/projects/${pId}`);
+        },
+        onError: (err) => {
+          toast({
+            title: "Failed to delete test case",
+            description: err.message,
+            variant: "destructive",
+          });
+        },
+      }
+    );
+  };
+
+  if (isLoading)
+    return (
+      <div className="p-8 text-center text-muted-foreground">Loading test case...</div>
+    );
+  if (!tc)
+    return (
+      <div className="p-8 text-center text-destructive">Test case not found</div>
+    );
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href={`/projects/${pId}`} className="text-muted-foreground hover:text-foreground">
+          <Link
+            href={`/projects/${pId}`}
+            className="text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
@@ -34,9 +92,42 @@ export default function TestCaseDetail() {
             <h1 className="text-3xl font-bold tracking-tight">{tc.title}</h1>
           </div>
         </div>
-        <Button variant="outline">
-          <Edit className="w-4 h-4 mr-2" /> Edit
-        </Button>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setLocation(`/projects/${pId}/test-cases/${tcId}/edit`)}
+          >
+            <Edit className="w-4 h-4 mr-2" /> Edit
+          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="text-destructive hover:text-destructive border-destructive/30 hover:border-destructive/60">
+                <Trash2 className="w-4 h-4 mr-2" /> Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this test case?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  <strong>TC-{tc.id}: {tc.title}</strong> will be permanently deleted. Any test
+                  results referencing this test case will also be removed. This cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={handleDelete}
+                  disabled={deleteTestCase.isPending}
+                >
+                  {deleteTestCase.isPending ? "Deleting..." : "Delete Test Case"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-6">
@@ -46,7 +137,7 @@ export default function TestCaseDetail() {
               <CardHeader>
                 <CardTitle className="text-lg">Description</CardTitle>
               </CardHeader>
-              <CardContent className="whitespace-pre-wrap">
+              <CardContent className="whitespace-pre-wrap text-sm leading-relaxed">
                 {tc.description}
               </CardContent>
             </Card>
@@ -59,26 +150,42 @@ export default function TestCaseDetail() {
             <CardContent className="space-y-0">
               {tc.steps?.length ? (
                 <div className="divide-y border rounded-md">
-                  {tc.steps.map((step, i) => (
-                    <div key={i} className="flex p-4 gap-4">
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-medium text-sm flex-shrink-0">
-                        {step.order}
-                      </div>
-                      <div className="flex-1 grid grid-cols-2 gap-4">
-                        <div>
-                          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Action</div>
-                          <div className="whitespace-pre-wrap text-sm">{step.action}</div>
+                  {(tc.steps as Array<{ order: number; action: string; expected: string }>).map(
+                    (step, i) => (
+                      <div key={i} className="flex p-4 gap-4">
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-medium text-sm flex-shrink-0">
+                          {step.order}
                         </div>
-                        <div>
-                          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Expected</div>
-                          <div className="whitespace-pre-wrap text-sm">{step.expected}</div>
+                        <div className="flex-1 grid grid-cols-2 gap-4">
+                          <div>
+                            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                              Action
+                            </div>
+                            <div className="whitespace-pre-wrap text-sm">{step.action}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                              Expected
+                            </div>
+                            <div className="whitespace-pre-wrap text-sm">{step.expected}</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               ) : (
-                <div className="text-muted-foreground text-center py-4">No steps defined.</div>
+                <div className="text-muted-foreground text-center py-6 text-sm">
+                  No steps defined.{" "}
+                  <button
+                    className="text-primary hover:underline"
+                    onClick={() =>
+                      setLocation(`/projects/${pId}/test-cases/${tcId}/edit`)
+                    }
+                  >
+                    Add steps
+                  </button>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -95,10 +202,30 @@ export default function TestCaseDetail() {
                 <div className="capitalize">{tc.status}</div>
               </div>
               <div>
+                <div className="text-sm font-medium text-muted-foreground mb-1">Priority</div>
+                <PriorityBadge priority={tc.priority} />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-muted-foreground mb-1">Automation</div>
+                <Badge variant="secondary">{tc.automationStatus}</Badge>
+              </div>
+              <div>
                 <div className="text-sm font-medium text-muted-foreground mb-1">Labels</div>
                 <div className="flex flex-wrap gap-2">
-                  {tc.labels?.length ? tc.labels.map(l => <Badge key={l} variant="outline">{l}</Badge>) : <span className="text-sm text-muted-foreground">None</span>}
+                  {tc.labels?.length ? (
+                    (tc.labels as string[]).map((l) => (
+                      <Badge key={l} variant="outline">
+                        {l}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">None</span>
+                  )}
                 </div>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-muted-foreground mb-1">Steps</div>
+                <div className="text-sm">{tc.steps?.length ?? 0} step(s)</div>
               </div>
             </CardContent>
           </Card>
