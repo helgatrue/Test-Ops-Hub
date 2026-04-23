@@ -29,7 +29,7 @@ export default function ProjectsList() {
       ) : projects?.length ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map(project => (
-            <Card key={project.id} className="flex flex-col hover:border-primary/50 transition-colors">
+            <Card key={project.id} className="flex flex-col hover:border-primary/50 transition-colors cursor-pointer">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FolderKanban className="w-5 h-5 text-muted-foreground" />
