@@ -4,6 +4,7 @@ import {
   useListTestCases,
   useListTestRuns,
   useDeleteTestCase,
+  useCreateTestCase,
   getGetProjectQueryKey,
   getListTestCasesQueryKey,
   getListTestRunsQueryKey,
@@ -11,7 +12,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, Search, Play, Edit, Trash2, MoreHorizontal } from "lucide-react";
+import { Plus, ArrowLeft, Search, Play, Edit, Trash2, MoreHorizontal, Copy } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -71,6 +72,37 @@ export default function ProjectDetail() {
   );
 
   const deleteTestCase = useDeleteTestCase();
+  const duplicateTestCase = useCreateTestCase();
+
+  const handleDuplicate = (tc: NonNullable<typeof testCases>[number]) => {
+    duplicateTestCase.mutate(
+      {
+        projectId: id,
+        data: {
+          title: `${tc.title} (Copy)`,
+          description: tc.description ?? undefined,
+          priority: tc.priority as any,
+          status: "draft",
+          automationStatus: tc.automationStatus as any,
+          labels: (tc.labels as string[]) ?? [],
+          steps: (tc.steps as Array<{ order: number; action: string; expected: string }>) ?? [],
+        },
+      },
+      {
+        onSuccess: (newTc) => {
+          queryClient.invalidateQueries({ queryKey: getListTestCasesQueryKey(id, {}) });
+          toast({ title: `Duplicated as TC-${newTc.id}` });
+        },
+        onError: (err) => {
+          toast({
+            title: "Failed to duplicate test case",
+            description: err.message,
+            variant: "destructive",
+          });
+        },
+      }
+    );
+  };
 
   const filteredTestCases = testCases?.filter((tc) =>
     tc.title.toLowerCase().includes(search.toLowerCase())
@@ -230,6 +262,13 @@ export default function ProjectDetail() {
                             >
                               <Edit className="w-4 h-4 mr-2" />
                               Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDuplicate(tc)}
+                              disabled={duplicateTestCase.isPending}
+                            >
+                              <Copy className="w-4 h-4 mr-2" />
+                              Duplicate
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
