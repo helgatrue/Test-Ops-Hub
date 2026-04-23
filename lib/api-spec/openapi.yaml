@@ -3,20 +3,32 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Test Management Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: projects
+    description: Project management
+  - name: test-cases
+    description: Test case management
+  - name: test-runs
+    description: Test run management
+  - name: test-results
+    description: Test result management
+  - name: dashboard
+    description: Dashboard and analytics
+  - name: webhooks
+    description: CI/CD webhook integration
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +36,548 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # Projects
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List all projects
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a new project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectBody"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{projectId}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a project by ID
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProjectBody"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # Test Cases
+  /projects/{projectId}/test-cases:
+    get:
+      operationId: listTestCases
+      tags: [test-cases]
+      summary: List test cases for a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, active, deprecated]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of test cases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TestCase"
+    post:
+      operationId: createTestCase
+      tags: [test-cases]
+      summary: Create a test case
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTestCaseBody"
+      responses:
+        "201":
+          description: Created test case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestCase"
+
+  /projects/{projectId}/test-cases/{testCaseId}:
+    get:
+      operationId: getTestCase
+      tags: [test-cases]
+      summary: Get a test case
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testCaseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Test case details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestCase"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateTestCase
+      tags: [test-cases]
+      summary: Update a test case
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testCaseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTestCaseBody"
+      responses:
+        "200":
+          description: Updated test case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestCase"
+    delete:
+      operationId: deleteTestCase
+      tags: [test-cases]
+      summary: Delete a test case
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testCaseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # Test Runs
+  /projects/{projectId}/test-runs:
+    get:
+      operationId: listTestRuns
+      tags: [test-runs]
+      summary: List test runs for a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, running, passed, failed, aborted]
+      responses:
+        "200":
+          description: List of test runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TestRun"
+    post:
+      operationId: createTestRun
+      tags: [test-runs]
+      summary: Create a test run
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTestRunBody"
+      responses:
+        "201":
+          description: Created test run
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestRun"
+
+  /projects/{projectId}/test-runs/{testRunId}:
+    get:
+      operationId: getTestRun
+      tags: [test-runs]
+      summary: Get a test run with results
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testRunId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Test run details with results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestRunDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateTestRun
+      tags: [test-runs]
+      summary: Update a test run status
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testRunId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTestRunBody"
+      responses:
+        "200":
+          description: Updated test run
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestRun"
+    delete:
+      operationId: deleteTestRun
+      tags: [test-runs]
+      summary: Delete a test run
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testRunId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # Test Results within a run
+  /projects/{projectId}/test-runs/{testRunId}/results:
+    get:
+      operationId: listTestResults
+      tags: [test-results]
+      summary: List results for a test run
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testRunId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, passed, failed, skipped, blocked]
+      responses:
+        "200":
+          description: List of test results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TestResult"
+    post:
+      operationId: createTestResult
+      tags: [test-results]
+      summary: Record a test result
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testRunId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTestResultBody"
+      responses:
+        "201":
+          description: Created test result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestResult"
+
+  /projects/{projectId}/test-runs/{testRunId}/results/{resultId}:
+    patch:
+      operationId: updateTestResult
+      tags: [test-results]
+      summary: Update a test result
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: testRunId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: resultId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTestResultBody"
+      responses:
+        "200":
+          description: Updated test result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestResult"
+
+  # Dashboard / Analytics
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get overall dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/recent-runs:
+    get:
+      operationId: getRecentRuns
+      tags: [dashboard]
+      summary: Get recent test runs across all projects
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Recent test runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecentRun"
+
+  /dashboard/pass-rate-trend:
+    get:
+      operationId: getPassRateTrend
+      tags: [dashboard]
+      summary: Get pass rate trend over last 30 days
+      responses:
+        "200":
+          description: Pass rate trend data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PassRateTrendPoint"
+
+  /dashboard/top-failing-tests:
+    get:
+      operationId: getTopFailingTests
+      tags: [dashboard]
+      summary: Get most frequently failing test cases
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+      responses:
+        "200":
+          description: Top failing tests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FailingTest"
+
+  # GitHub Webhook
+  /webhooks/github:
+    post:
+      operationId: githubWebhook
+      tags: [webhooks]
+      summary: Receive GitHub Actions test results
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GitHubWebhookPayload"
+      responses:
+        "200":
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +588,550 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+
+    # Project schemas
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        repoUrl:
+          type: string
+          nullable: true
+        defaultBranch:
+          type: string
+          nullable: true
+        totalTestCases:
+          type: integer
+        totalRuns:
+          type: integer
+        lastRunAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - totalTestCases
+        - totalRuns
+        - createdAt
+        - updatedAt
+
+    CreateProjectBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        repoUrl:
+          type: string
+        defaultBranch:
+          type: string
+      required:
+        - name
+
+    UpdateProjectBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        repoUrl:
+          type: string
+        defaultBranch:
+          type: string
+
+    # Test case schemas
+    TestStep:
+      type: object
+      properties:
+        order:
+          type: integer
+        action:
+          type: string
+        expected:
+          type: string
+      required:
+        - order
+        - action
+        - expected
+
+    TestCase:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        status:
+          type: string
+          enum: [draft, active, deprecated]
+        labels:
+          type: array
+          items:
+            type: string
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestStep"
+        automationStatus:
+          type: string
+          enum: [manual, automated, to_automate]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - projectId
+        - title
+        - priority
+        - status
+        - labels
+        - steps
+        - automationStatus
+        - createdAt
+        - updatedAt
+
+    CreateTestCaseBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+          default: medium
+        status:
+          type: string
+          enum: [draft, active, deprecated]
+          default: draft
+        labels:
+          type: array
+          items:
+            type: string
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestStep"
+        automationStatus:
+          type: string
+          enum: [manual, automated, to_automate]
+          default: manual
+      required:
+        - title
+
+    UpdateTestCaseBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        status:
+          type: string
+          enum: [draft, active, deprecated]
+        labels:
+          type: array
+          items:
+            type: string
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestStep"
+        automationStatus:
+          type: string
+          enum: [manual, automated, to_automate]
+
+    # Test run schemas
+    TestRun:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, passed, failed, aborted]
+        branch:
+          type: string
+          nullable: true
+        commitHash:
+          type: string
+          nullable: true
+        commitMessage:
+          type: string
+          nullable: true
+        triggeredBy:
+          type: string
+          nullable: true
+        ciProvider:
+          type: string
+          nullable: true
+        totalTests:
+          type: integer
+        passedTests:
+          type: integer
+        failedTests:
+          type: integer
+        skippedTests:
+          type: integer
+        blockedTests:
+          type: integer
+        duration:
+          type: integer
+          nullable: true
+          description: Duration in milliseconds
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        finishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - projectId
+        - name
+        - status
+        - totalTests
+        - passedTests
+        - failedTests
+        - skippedTests
+        - blockedTests
+        - createdAt
+        - updatedAt
+
+    TestRunDetail:
+      allOf:
+        - $ref: "#/components/schemas/TestRun"
+        - type: object
+          properties:
+            results:
+              type: array
+              items:
+                $ref: "#/components/schemas/TestResult"
+          required:
+            - results
+
+    CreateTestRunBody:
+      type: object
+      properties:
+        name:
+          type: string
+        branch:
+          type: string
+        commitHash:
+          type: string
+        commitMessage:
+          type: string
+        triggeredBy:
+          type: string
+        ciProvider:
+          type: string
+        testCaseIds:
+          type: array
+          items:
+            type: integer
+      required:
+        - name
+
+    UpdateTestRunBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, running, passed, failed, aborted]
+        startedAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+
+    # Test result schemas
+    TestResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        testRunId:
+          type: integer
+        testCaseId:
+          type: integer
+        testCaseTitle:
+          type: string
+        status:
+          type: string
+          enum: [pending, passed, failed, skipped, blocked]
+        errorMessage:
+          type: string
+          nullable: true
+        stackTrace:
+          type: string
+          nullable: true
+        duration:
+          type: integer
+          nullable: true
+          description: Duration in milliseconds
+        retries:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - testRunId
+        - testCaseId
+        - testCaseTitle
+        - status
+        - retries
+        - createdAt
+        - updatedAt
+
+    CreateTestResultBody:
+      type: object
+      properties:
+        testCaseId:
+          type: integer
+        status:
+          type: string
+          enum: [pending, passed, failed, skipped, blocked]
+          default: pending
+        errorMessage:
+          type: string
+        stackTrace:
+          type: string
+        duration:
+          type: integer
+        retries:
+          type: integer
+          default: 0
+      required:
+        - testCaseId
+
+    UpdateTestResultBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, passed, failed, skipped, blocked]
+        errorMessage:
+          type: string
+        stackTrace:
+          type: string
+        duration:
+          type: integer
+        retries:
+          type: integer
+
+    # Dashboard schemas
+    DashboardSummary:
+      type: object
+      properties:
+        totalProjects:
+          type: integer
+        totalTestCases:
+          type: integer
+        totalRuns:
+          type: integer
+        activeRuns:
+          type: integer
+        overallPassRate:
+          type: number
+          format: float
+        passedLast7Days:
+          type: integer
+        failedLast7Days:
+          type: integer
+        avgDuration:
+          type: integer
+          nullable: true
+      required:
+        - totalProjects
+        - totalTestCases
+        - totalRuns
+        - activeRuns
+        - overallPassRate
+        - passedLast7Days
+        - failedLast7Days
+
+    RecentRun:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        projectId:
+          type: integer
+        projectName:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, passed, failed, aborted]
+        totalTests:
+          type: integer
+        passedTests:
+          type: integer
+        failedTests:
+          type: integer
+        duration:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - projectId
+        - projectName
+        - status
+        - totalTests
+        - passedTests
+        - failedTests
+        - createdAt
+
+    PassRateTrendPoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        passRate:
+          type: number
+          format: float
+        totalRuns:
+          type: integer
+      required:
+        - date
+        - passRate
+        - totalRuns
+
+    FailingTest:
+      type: object
+      properties:
+        testCaseId:
+          type: integer
+        testCaseTitle:
+          type: string
+        projectId:
+          type: integer
+        projectName:
+          type: string
+        failureCount:
+          type: integer
+        lastFailedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - testCaseId
+        - testCaseTitle
+        - projectId
+        - projectName
+        - failureCount
+
+    # GitHub webhook
+    GitHubWebhookPayload:
+      type: object
+      properties:
+        projectId:
+          type: integer
+        runName:
+          type: string
+        branch:
+          type: string
+        commitHash:
+          type: string
+        commitMessage:
+          type: string
+        triggeredBy:
+          type: string
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              testCaseId:
+                type: integer
+              status:
+                type: string
+                enum: [passed, failed, skipped]
+              duration:
+                type: integer
+              errorMessage:
+                type: string
+            required:
+              - testCaseId
+              - status
+      required:
+        - projectId
+        - runName
+        - results
+
+    WebhookResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        testRunId:
+          type: integer
+        message:
+          type: string
+      required:
+        - success
+        - message
