@@ -206,7 +206,7 @@ export default function TestRunDetail() {
         </Card>
 
         <div className="space-y-6">
-          <Card>
+          <Card className="border-t-[#ffffff00] border-r-[#ffffff00] border-b-[#ffffff00] border-l-[#ffffff00]">
             <CardHeader>
               <CardTitle className="text-sm">Summary</CardTitle>
             </CardHeader>
