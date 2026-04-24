@@ -41,7 +41,7 @@ export default function Dashboard() {
           </Card>
           <Card className="border-t-[#ffffff00] border-r-[#ffffff00] border-b-[#ffffff00] border-l-[#ffffff00]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Projects</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total projects</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{summary.totalProjects}</div>
