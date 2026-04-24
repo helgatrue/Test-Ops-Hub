@@ -555,7 +555,7 @@ export default function ProjectDetail() {
 
       {/* ── Import Test Cases Dialog ── */}
       <Dialog open={importOpen} onOpenChange={(o) => { setImportOpen(o); if (!o) { setSourceProjectId(""); setSelectedTcIds(new Set()); } }}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg !duration-0 !animate-none">
           <DialogHeader>
             <DialogTitle>Import Test Cases</DialogTitle>
             <DialogDescription>
