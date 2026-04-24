@@ -89,7 +89,7 @@ export default function Dashboard() {
               <div className="space-y-4">
                 {recentRuns.map(run => (
                   <Link key={run.id} href={`/projects/${run.projectId}/test-runs/${run.id}`} className="block">
-                    <div className="flex items-center justify-between p-3 border rounded-lg hover-elevate transition-colors">
+                    <div className="flex items-center justify-between p-3 border rounded-lg hover-elevate transition-colors border-t-[#0f172900] border-r-[#0f172900] border-b-[#0f172900] border-l-[#0f172900] bg-[#fafafa]">
                       <div>
                         <div className="font-medium text-sm flex items-center gap-2">
                           {run.projectName} / {run.name}
