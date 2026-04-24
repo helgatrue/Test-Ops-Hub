@@ -61,7 +61,7 @@ export default function TestRunDetail() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="md:col-span-3">
+        <Card className="md:col-span-3 border-t-[#ffffff00] border-r-[#ffffff00] border-b-[#ffffff00] border-l-[#ffffff00]">
           <CardHeader>
             <CardTitle>Results</CardTitle>
           </CardHeader>
