@@ -1,11 +1,11 @@
 import { useParams, Link } from "wouter";
 import { useGetTestRun, useUpdateTestResult, getGetTestRunQueryKey } from "@workspace/api-client-react";
-import { ArrowLeft, Clock, GitBranch, GitCommit, CheckCircle, XCircle, AlertCircle, Ban } from "lucide-react";
+import { ArrowLeft, Clock, GitBranch, GitCommit, CheckCircle, XCircle, AlertCircle, Ban, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQueryClient } from "@tanstack/react-query";
@@ -43,6 +43,78 @@ export default function TestRunDetail() {
   if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading test run...</div>;
   if (!run) return <div className="p-8 text-center text-destructive">Test run not found</div>;
 
+  const downloadConfluenceReport = () => {
+    const now = format(new Date(), "MMMM d, yyyy 'at' HH:mm");
+    const statusIcon: Record<string, string> = {
+      passed: "✅", failed: "❌", skipped: "⚠️", blocked: "🚫", pending: "⏳",
+    };
+    const resultRows = (run.results ?? []).map(r => `
+      <tr>
+        <td>${statusIcon[r.status] ?? ""} ${r.testCaseTitle}</td>
+        <td>${r.status.charAt(0).toUpperCase() + r.status.slice(1)}</td>
+        <td>${r.duration ? `${r.duration}ms` : "—"}</td>
+        <td style="font-family:monospace;font-size:12px;color:#ef4443">${r.errorMessage ?? ""}</td>
+      </tr>`).join("");
+    const envSection = (run.branch || run.commitHash || run.ciProvider) ? `
+      <h2>Environment</h2>
+      <table>
+        <tbody>
+          ${run.branch ? `<tr><td><strong>Branch</strong></td><td><code>${run.branch}</code></td></tr>` : ""}
+          ${run.commitHash ? `<tr><td><strong>Commit</strong></td><td><code>${run.commitHash.substring(0, 7)}</code></td></tr>` : ""}
+          ${run.ciProvider ? `<tr><td><strong>CI Provider</strong></td><td>${run.ciProvider}</td></tr>` : ""}
+        </tbody>
+      </table>` : "";
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>${run.name} — Test Run Report</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172b4d; padding: 32px; max-width: 960px; margin: 0 auto; }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .subtitle { color: #6b778c; font-size: 13px; margin-bottom: 32px; }
+    h2 { font-size: 15px; border-bottom: 1px solid #dfe1e6; padding-bottom: 6px; margin-top: 32px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stat { background: #f4f5f7; border-radius: 6px; padding: 14px; text-align: center; }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #6b778c; margin-bottom: 4px; }
+    .stat-value { font-size: 24px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 8px 12px; background: #f4f5f7; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #6b778c; }
+    td { padding: 8px 12px; border-bottom: 1px solid #dfe1e6; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    code { background: #f4f5f7; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>${run.name}</h1>
+  <div class="subtitle">Status: <strong>${run.status.toUpperCase()}</strong> &nbsp;·&nbsp; Generated on ${now}</div>
+
+  <h2>Summary</h2>
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-value">${run.totalTests}</div></div>
+    <div class="stat"><div class="stat-label" style="color:#16a34a">Passed</div><div class="stat-value" style="color:#16a34a">${run.passedTests}</div></div>
+    <div class="stat"><div class="stat-label" style="color:#ef4443">Failed</div><div class="stat-value" style="color:#ef4443">${run.failedTests}</div></div>
+    <div class="stat"><div class="stat-label" style="color:#d97706">Skipped</div><div class="stat-value" style="color:#d97706">${run.skippedTests}</div></div>
+  </div>
+
+  <h2>Results</h2>
+  <table>
+    <thead><tr><th>Test Case</th><th>Status</th><th>Duration</th><th>Error</th></tr></thead>
+    <tbody>${resultRows || "<tr><td colspan='4'>No results recorded.</td></tr>"}</tbody>
+  </table>
+
+  ${envSection}
+</body>
+</html>`;
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `test-run-${run.id}-${format(new Date(), "yyyy-MM-dd")}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -58,6 +130,10 @@ export default function TestRunDetail() {
             <h1 className="text-3xl font-bold tracking-tight">{run.name}</h1>
           </div>
         </div>
+        <Button variant="outline" size="sm" onClick={downloadConfluenceReport}>
+          <Download className="w-4 h-4 mr-2" />
+          Download Report
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
