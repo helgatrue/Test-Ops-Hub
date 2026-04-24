@@ -60,7 +60,7 @@ export default function Dashboard() {
       ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="col-span-1">
+        <Card className="col-span-1 border-t-[#ffffff00] border-r-[#ffffff00] border-b-[#ffffff00] border-l-[#ffffff00]">
           <CardHeader>
             <CardTitle>Pass Rate Trend</CardTitle>
           </CardHeader>
