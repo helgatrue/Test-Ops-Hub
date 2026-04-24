@@ -103,7 +103,7 @@ export default function Dashboard() {
                       <div className="flex items-center gap-3">
                         <div className="text-xs text-muted-foreground text-right hidden sm:block">
                           <div>{run.passedTests} passed</div>
-                          <div>{run.failedTests} failed</div>
+                          <div className="text-destructive">{run.failedTests} failed</div>
                         </div>
                         <StatusBadge status={run.status} />
                       </div>
