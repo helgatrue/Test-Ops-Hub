@@ -5,6 +5,8 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import { Link } from "wouter";
 import { format } from "date-fns";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 
 export default function Dashboard() {
   const { data: summary, isLoading: isSummaryLoading } = useGetDashboardSummary();
@@ -12,10 +14,84 @@ export default function Dashboard() {
   const { data: recentRuns, isLoading: isRecentLoading } = useGetRecentRuns({ limit: 5 });
   const { data: failingTests, isLoading: isFailingLoading } = useGetTopFailingTests({ limit: 5 });
 
+  const downloadConfluenceReport = () => {
+    const now = format(new Date(), "MMMM d, yyyy 'at' HH:mm");
+    const runsRows = (recentRuns ?? []).map(r => `
+      <tr>
+        <td>${r.projectName} / ${r.name}</td>
+        <td>${format(new Date(r.createdAt), "MMM d, HH:mm")}</td>
+        <td style="color:#16a34a">${r.passedTests} passed</td>
+        <td style="color:#ef4443">${r.failedTests} failed</td>
+        <td><strong>${r.status.toUpperCase()}</strong></td>
+      </tr>`).join("");
+    const failingRows = (failingTests ?? []).map(t => `
+      <tr>
+        <td>${t.testCaseTitle}</td>
+        <td>${t.projectName}</td>
+        <td style="color:#ef4443"><strong>${t.failureCount}</strong></td>
+      </tr>`).join("");
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TestOPS Dashboard Report</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172b4d; padding: 32px; max-width: 960px; margin: 0 auto; }
+    h1 { font-size: 24px; margin-bottom: 4px; }
+    .subtitle { color: #6b778c; font-size: 13px; margin-bottom: 32px; }
+    h2 { font-size: 16px; border-bottom: 1px solid #dfe1e6; padding-bottom: 6px; margin-top: 32px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat { background: #f4f5f7; border-radius: 6px; padding: 16px; }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #6b778c; margin-bottom: 4px; }
+    .stat-value { font-size: 28px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 8px 12px; background: #f4f5f7; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #6b778c; }
+    td { padding: 8px 12px; border-bottom: 1px solid #dfe1e6; }
+    tr:last-child td { border-bottom: none; }
+  </style>
+</head>
+<body>
+  <h1>TestOPS Dashboard Report</h1>
+  <div class="subtitle">Generated on ${now}</div>
+
+  <h2>Summary</h2>
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Overall Pass Rate</div><div class="stat-value">${summary?.overallPassRate.toFixed(1) ?? "—"}%</div></div>
+    <div class="stat"><div class="stat-label">Active Runs</div><div class="stat-value">${summary?.activeRuns ?? "—"}</div></div>
+    <div class="stat"><div class="stat-label">Total Projects</div><div class="stat-value">${summary?.totalProjects ?? "—"}</div></div>
+    <div class="stat"><div class="stat-label">Total Test Cases</div><div class="stat-value">${summary?.totalTestCases ?? "—"}</div></div>
+  </div>
+
+  <h2>Recent Runs</h2>
+  <table>
+    <thead><tr><th>Run</th><th>Date</th><th>Passed</th><th>Failed</th><th>Status</th></tr></thead>
+    <tbody>${runsRows || "<tr><td colspan='5'>No recent runs</td></tr>"}</tbody>
+  </table>
+
+  <h2>Top Failing Tests</h2>
+  <table>
+    <thead><tr><th>Test Case</th><th>Project</th><th>Failures (last 7 days)</th></tr></thead>
+    <tbody>${failingRows || "<tr><td colspan='3'>No failing tests</td></tr>"}</tbody>
+  </table>
+</body>
+</html>`;
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `testops-report-${format(new Date(), "yyyy-MM-dd")}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <Button variant="outline" size="sm" onClick={downloadConfluenceReport} disabled={isSummaryLoading}>
+          <Download className="w-4 h-4 mr-2" />
+          Download Report
+        </Button>
       </div>
       {isSummaryLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
