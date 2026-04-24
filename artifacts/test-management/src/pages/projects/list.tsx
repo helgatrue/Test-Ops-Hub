@@ -29,35 +29,35 @@ export default function ProjectsList() {
       ) : projects?.length ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map(project => (
-            <Card key={project.id} className="flex flex-col hover:border-primary/50 transition-colors cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FolderKanban className="w-5 h-5 text-muted-foreground" />
-                  <Link href={`/projects/${project.id}`} className="hover:underline">
+            <Link key={project.id} href={`/projects/${project.id}`} className="block">
+              <Card className="flex flex-col hover:border-primary/50 transition-colors cursor-pointer h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FolderKanban className="w-5 h-5 text-muted-foreground" />
                     {project.name}
-                  </Link>
-                </CardTitle>
-                {project.description && (
-                  <CardDescription className="line-clamp-2">{project.description}</CardDescription>
-                )}
-              </CardHeader>
-              <CardContent className="mt-auto pb-6">
-                <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-                  <div>
-                    <div className="text-muted-foreground">Test Cases</div>
-                    <div className="font-medium text-lg">{project.totalTestCases}</div>
+                  </CardTitle>
+                  {project.description && (
+                    <CardDescription className="line-clamp-2">{project.description}</CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent className="mt-auto pb-6">
+                  <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+                    <div>
+                      <div className="text-muted-foreground">Test Cases</div>
+                      <div className="font-medium text-lg">{project.totalTestCases}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Total Runs</div>
+                      <div className="font-medium text-lg">{project.totalRuns}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-muted-foreground">Total Runs</div>
-                    <div className="font-medium text-lg">{project.totalRuns}</div>
+                  <div className="flex items-center text-xs text-muted-foreground gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    {project.lastRunAt ? `Last run ${formatDistanceToNow(new Date(project.lastRunAt))} ago` : "Never run"}
                   </div>
-                </div>
-                <div className="flex items-center text-xs text-muted-foreground gap-1.5">
-                  <Clock className="w-3.5 h-3.5" />
-                  {project.lastRunAt ? `Last run ${formatDistanceToNow(new Date(project.lastRunAt))} ago` : "Never run"}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       ) : (
