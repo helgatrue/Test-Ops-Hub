@@ -118,7 +118,7 @@ export default function Dashboard() {
       </div>
       <Card className="border-t-[#ffffff00] border-r-[#ffffff00] border-b-[#ffffff00] border-l-[#ffffff00]">
         <CardHeader>
-          <CardTitle>Top Failing Tests</CardTitle>
+          <CardTitle>Top failing tests</CardTitle>
         </CardHeader>
         <CardContent>
           {isFailingLoading ? <Skeleton className="h-40" /> : failingTests ? (
