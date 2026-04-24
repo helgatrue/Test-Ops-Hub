@@ -17,7 +17,6 @@ export default function Dashboard() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
       </div>
-
       {isSummaryLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32" />)}
@@ -58,7 +57,6 @@ export default function Dashboard() {
           </Card>
         </div>
       ) : null}
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="col-span-1 border-t-[#ffffff00] border-r-[#ffffff00] border-b-[#ffffff00] border-l-[#ffffff00]">
           <CardHeader>
@@ -118,7 +116,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
-
       <Card className="border-t-[#ffffff00] border-r-[#ffffff00] border-b-[#ffffff00] border-l-[#ffffff00]">
         <CardHeader>
           <CardTitle>Top Failing Tests</CardTitle>
@@ -128,7 +125,7 @@ export default function Dashboard() {
             <div className="space-y-2">
               {failingTests.map(test => (
                 <Link key={test.testCaseId} href={`/projects/${test.projectId}/test-cases/${test.testCaseId}`} className="block">
-                  <div className="flex justify-between items-center p-3 border rounded hover:bg-muted/50 transition-colors">
+                  <div className="flex justify-between items-center p-3 border rounded hover:bg-muted/50 transition-colors border-t-[#ffffff00] border-r-[#ffffff00] border-b-[#ffffff00] border-l-[#ffffff00] bg-[#e8e8e838]">
                     <div>
                       <div className="font-medium text-sm">{test.testCaseTitle}</div>
                       <div className="text-xs text-muted-foreground">{test.projectName}</div>
