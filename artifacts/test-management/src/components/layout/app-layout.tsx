@@ -1,9 +1,14 @@
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { useState } from "react";
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, FolderKanban, Settings, Beaker } from "lucide-react";
+import { LayoutDashboard, FolderKanban, Settings, Beaker, ChevronRight } from "lucide-react";
+import { useListProjects } from "@workspace/api-client-react";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const [projectsOpen, setProjectsOpen] = useState(location.startsWith("/projects"));
+  const { data: projects } = useListProjects();
 
   return (
     <SidebarProvider>
@@ -25,14 +30,45 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.startsWith("/projects")}>
-                  <Link href="/projects">
-                    <FolderKanban className="w-4 h-4 mr-2" />
-                    Projects
-                  </Link>
-                </SidebarMenuButton>
+                <Collapsible open={projectsOpen} onOpenChange={setProjectsOpen}>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton isActive={location.startsWith("/projects")} className="w-full justify-between">
+                      <span className="flex items-center">
+                        <FolderKanban className="w-4 h-4 mr-2" />
+                        Projects
+                      </span>
+                      <ChevronRight
+                        className="w-4 h-4 text-muted-foreground transition-transform duration-200"
+                        style={{ transform: projectsOpen ? "rotate(90deg)" : "rotate(0deg)" }}
+                      />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild isActive={location === "/projects"}>
+                          <Link href="/projects">All Projects</Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      {projects?.map(project => (
+                        <SidebarMenuSubItem key={project.id}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={location.startsWith(`/projects/${project.id}`)}
+                          >
+                            <Link href={`/projects/${project.id}`}>
+                              <span className="truncate">{project.name}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </Collapsible>
               </SidebarMenuItem>
+
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={location.startsWith("/settings")}>
                   <Link href="/settings">
