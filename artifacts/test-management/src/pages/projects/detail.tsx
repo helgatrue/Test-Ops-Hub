@@ -292,7 +292,6 @@ export default function ProjectDetail() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-
       {/* ── Tabs ── */}
       <Tabs defaultValue="test-cases">
         <TabsList>
@@ -343,7 +342,7 @@ export default function ProjectDetail() {
             </div>
           </div>
 
-          <div className="border rounded-md">
+          <div className="border rounded-md border-t-[transparent] border-r-[transparent] border-b-[transparent] border-l-[transparent]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -518,7 +517,6 @@ export default function ProjectDetail() {
           </div>
         </TabsContent>
       </Tabs>
-
       {/* ── Edit Project Dialog ── */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-md">
@@ -552,7 +550,6 @@ export default function ProjectDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {/* ── Import Test Cases Dialog ── */}
       <Dialog open={importOpen} onOpenChange={(o) => { setImportOpen(o); if (!o) { setSourceProjectId(""); setSelectedTcIds(new Set()); } }}>
         <DialogContent className="sm:max-w-lg !duration-0 !animate-none">
@@ -630,7 +627,6 @@ export default function ProjectDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {/* ── Delete Test Case Dialog ── */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
@@ -653,7 +649,6 @@ export default function ProjectDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
       {/* ── Delete Project Dialog ── */}
       <AlertDialog open={deleteProjectOpen} onOpenChange={setDeleteProjectOpen}>
         <AlertDialogContent>
