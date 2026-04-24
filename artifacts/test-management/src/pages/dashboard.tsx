@@ -82,7 +82,7 @@ export default function Dashboard() {
 
         <Card className="col-span-1 border-t-[#ffffff00] border-r-[#ffffff00] border-b-[#ffffff00] border-l-[#ffffff00]">
           <CardHeader>
-            <CardTitle>Recent Runs</CardTitle>
+            <CardTitle>Recent runs</CardTitle>
           </CardHeader>
           <CardContent>
             {isRecentLoading ? <Skeleton className="h-[300px]" /> : recentRuns ? (
