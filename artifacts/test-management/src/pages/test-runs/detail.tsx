@@ -155,7 +155,7 @@ export default function TestRunDetail() {
           </Card>
 
           {(run.branch || run.commitHash || run.ciProvider) && (
-            <Card>
+            <Card className="border-t-[#ffffff00] border-r-[#ffffff00] border-b-[#ffffff00] border-l-[#ffffff00]">
               <CardHeader>
                 <CardTitle className="text-sm">Environment</CardTitle>
               </CardHeader>
