@@ -25,7 +25,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="border-t-[#ffffff00] border-r-[#ffffff00] border-b-[#ffffff00] border-l-[#ffffff00]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Overall Pass Rate</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Overall pass rate</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{summary.overallPassRate.toFixed(1)}%</div>
