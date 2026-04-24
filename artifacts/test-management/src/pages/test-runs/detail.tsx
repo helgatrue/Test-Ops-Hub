@@ -130,7 +130,7 @@ export default function TestRunDetail() {
             <h1 className="text-3xl font-bold tracking-tight">{run.name}</h1>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={downloadConfluenceReport}>
+        <Button variant="outline" size="sm" onClick={downloadConfluenceReport} className="border-t-[transparent] border-r-[transparent] border-b-[transparent] border-l-[transparent] bg-[#a3dbff78]">
           <Download className="w-4 h-4 mr-2" />
           Download Report
         </Button>
