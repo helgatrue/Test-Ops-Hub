@@ -9,7 +9,7 @@ export function StatusBadge({ status }: StatusProps) {
     case "passed":
       return <Badge variant="outline" className="bg-success/10 text-success-foreground border-success/20">Passed</Badge>;
     case "failed":
-      return <Badge variant="outline" className="bg-destructive/10 text-destructive-foreground border-destructive/20">Failed</Badge>;
+      return <Badge variant="outline" className="border-destructive/20 bg-[#ef43431a] text-[#ef4443]">Failed</Badge>;
     case "skipped":
       return <Badge variant="outline" className="bg-warning/10 text-warning-foreground border-warning/20">Skipped</Badge>;
     case "running":
