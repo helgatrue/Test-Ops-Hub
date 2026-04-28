@@ -15,11 +15,11 @@ paths = [ "/" ]
 localPort = 21478
 
 [services.development]
-run = "pnpm --filter @workspace/test-management run dev"
+run = "pnpm --filter @workspace/angular-frontend run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/test-management", "run", "build" ]
-publicDir = "artifacts/test-management/dist/public"
+build = [ "pnpm", "--filter", "@workspace/angular-frontend", "run", "build" ]
+publicDir = "artifacts/angular-frontend/dist/angular-frontend/browser"
 serve = "static"
 
 [[services.production.rewrites]]

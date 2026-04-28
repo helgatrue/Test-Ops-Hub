@@ -1,0 +1,94 @@
+<div style="display:flex;flex-direction:column;gap:1.5rem">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h1 style="font-size:1.875rem;font-weight:700;letter-spacing:-0.025em">Dashboard</h1>
+    <button class="btn btn-outline btn-sm" (click)="downloadReport()" [disabled]="!summary()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Report
+    </button>
+  </div>
+
+  @if (summary(); as s) {
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">
+      @for (stat of [
+        {label:'Overall pass rate',value:s.overallPassRate.toFixed(1)+'%'},
+        {label:'Active runs',value:''+s.activeRuns},
+        {label:'Total projects',value:''+s.totalProjects},
+        {label:'Total test cases',value:''+s.totalTestCases}
+      ]; track stat.label) {
+        <div class="card" style="padding:1.25rem">
+          <div style="font-size:0.8125rem;font-weight:500;color:hsl(var(--muted-foreground));margin-bottom:0.5rem">{{ stat.label }}</div>
+          <div style="font-size:1.5rem;font-weight:700">{{ stat.value }}</div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="skeleton" style="height:5rem"></div>
+      }
+    </div>
+  }
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+    <div class="card" style="padding:1.25rem">
+      <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem">Pass rate trend</h2>
+      <div style="height:280px;position:relative">
+        @if (trend().length) {
+          <canvas #chartCanvas style="width:100%;height:100%"></canvas>
+        } @else {
+          <div class="skeleton" style="width:100%;height:100%"></div>
+        }
+      </div>
+    </div>
+
+    <div class="card" style="padding:1.25rem">
+      <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem">Recent runs</h2>
+      @if (loading()) {
+        <div class="skeleton" style="height:280px"></div>
+      } @else {
+        <div style="display:flex;flex-direction:column;gap:0.75rem">
+          @for (run of recentRuns(); track run.id) {
+            <a [routerLink]="['/projects', run.projectId, 'test-runs', run.id]" style="display:block;text-decoration:none;color:inherit">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--muted)/0.3);transition:background 0.15s" onmouseenter="this.style.background='hsl(210 40% 96%)'" onmouseleave="this.style.background='hsl(var(--muted)/0.3)'">
+                <div>
+                  <div style="font-size:0.875rem;font-weight:500">{{ run.projectName }} / {{ run.name }}</div>
+                  <div style="font-size:0.75rem;color:hsl(var(--muted-foreground));margin-top:0.125rem">{{ formatDate(run.createdAt) }}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.75rem">
+                  <div style="font-size:0.75rem;color:hsl(var(--muted-foreground));text-align:right">
+                    <div>{{ run.passedTests }} passed</div>
+                    <div style="color:#ef4443">{{ run.failedTests }} failed</div>
+                  </div>
+                  <span [class]="statusClass(run.status)">{{ run.status | titlecase }}</span>
+                </div>
+              </div>
+            </a>
+          }
+          @if (recentRuns().length === 0) {
+            <div style="text-align:center;color:hsl(var(--muted-foreground));padding:2rem;font-size:0.875rem">No recent test runs.</div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="card" style="padding:1.25rem">
+    <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem">Top failing tests</h2>
+    <div style="display:flex;flex-direction:column;gap:0.5rem">
+      @for (test of failingTests(); track test.testCaseId) {
+        <a [routerLink]="['/projects', test.projectId, 'test-cases', test.testCaseId]" style="display:block;text-decoration:none;color:inherit">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;border-radius:var(--radius);border:1px solid hsl(var(--border)/0.4);background:hsl(var(--muted)/0.2);transition:background 0.15s" onmouseenter="this.style.background='hsl(210 40% 96%)'" onmouseleave="this.style.background='hsl(var(--muted)/0.2)'">
+            <div>
+              <div style="font-size:0.875rem;font-weight:500">{{ test.testCaseTitle }}</div>
+              <div style="font-size:0.75rem;color:hsl(var(--muted-foreground))">{{ test.projectName }}</div>
+            </div>
+            <div style="font-size:0.875rem;font-weight:500;color:#ef4443">{{ test.failureCount }} failures</div>
+          </div>
+        </a>
+      }
+      @if (failingTests().length === 0) {
+        <div style="text-align:center;color:hsl(var(--muted-foreground));padding:2rem;font-size:0.875rem">No failing tests in the last 7 days!</div>
+      }
+    </div>
+  </div>
+</div>

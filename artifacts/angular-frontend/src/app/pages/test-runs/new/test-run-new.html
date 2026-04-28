@@ -1,0 +1,53 @@
+<div style="max-width:56rem;margin:0 auto;display:flex;flex-direction:column;gap:1.5rem">
+  <div style="display:flex;align-items:center;gap:1rem">
+    <a [routerLink]="['/projects', projectId]" style="color:hsl(var(--muted-foreground));text-decoration:none;display:flex">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </a>
+    <h1 style="font-size:1.875rem;font-weight:700">New Test Run</h1>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem">Run Details</h2>
+    <div><label class="label">Run Name *</label><input class="input" [ngModel]="name()" (ngModelChange)="name.set($event)" placeholder="e.g. Release 2.4.0 Regression" /></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div>
+        <h2 style="font-size:1rem;font-weight:600">Select Test Cases</h2>
+        <p style="font-size:0.8125rem;color:hsl(var(--muted-foreground))">Choose tests to include in this run</p>
+      </div>
+      <span style="font-size:0.875rem;color:hsl(var(--muted-foreground));font-weight:500">{{ selectedIds().size }} selected</span>
+    </div>
+
+    @if (loading()) {
+      <div style="text-align:center;padding:2rem;color:hsl(var(--muted-foreground))">Loading test cases...</div>
+    } @else if (testCases().length) {
+      <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:0.75rem;padding:1rem;background:hsl(var(--muted)/0.5);border-bottom:1px solid hsl(var(--border))">
+          <input type="checkbox" [checked]="allSelected" (change)="toggleAll()" style="width:auto;cursor:pointer" />
+          <span style="font-weight:500;font-size:0.875rem">Select All</span>
+        </div>
+        @for (tc of testCases(); track tc.id) {
+          <div style="display:flex;align-items:center;gap:0.75rem;padding:1rem;border-bottom:1px solid hsl(var(--border)/0.5);transition:background 0.1s" [style.background]="selectedIds().has(tc.id) ? 'hsl(var(--muted)/0.3)' : ''">
+            <input type="checkbox" [id]="'tc-'+tc.id" [checked]="selectedIds().has(tc.id)" (change)="toggle(tc.id)" style="width:auto;cursor:pointer" />
+            <label [for]="'tc-'+tc.id" style="flex:1;cursor:pointer">
+              <div style="font-weight:500;font-size:0.875rem">{{ tc.title }}</div>
+              <div style="font-size:0.75rem;color:hsl(var(--muted-foreground));font-family:monospace;margin-top:0.125rem">TC-{{ tc.id }}</div>
+            </label>
+          </div>
+        }
+      </div>
+    } @else {
+      <div style="text-align:center;padding:2rem;color:hsl(var(--muted-foreground));font-size:0.875rem;border:2px dashed hsl(var(--border));border-radius:var(--radius)">No active test cases available.</div>
+    }
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:0.75rem">
+    <a [routerLink]="['/projects', projectId]" class="btn btn-outline">Cancel</a>
+    <button class="btn btn-primary" (click)="submit()" [disabled]="saving() || selectedIds().size === 0">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      {{ saving() ? 'Starting...' : 'Start Run' }}
+    </button>
+  </div>
+</div>

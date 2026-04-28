@@ -1,0 +1,99 @@
+@if (loading()) {
+  <div style="text-align:center;padding:2rem;color:hsl(var(--muted-foreground))">Loading test case...</div>
+} @else if (!tc()) {
+  <div style="text-align:center;padding:2rem;color:hsl(var(--destructive))">Test case not found</div>
+} @else {
+  <div style="max-width:56rem;margin:0 auto;display:flex;flex-direction:column;gap:1.5rem">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <a [routerLink]="['/projects', projectId]" style="color:hsl(var(--muted-foreground));text-decoration:none;display:flex">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </a>
+        <div>
+          <div style="font-size:0.75rem;color:hsl(var(--muted-foreground));font-family:monospace;margin-bottom:0.25rem">TC-{{ tc()!.id }}</div>
+          <h1 style="font-size:1.5rem;font-weight:700">{{ tc()!.title }}</h1>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.5rem">
+        <a [routerLink]="['/projects', projectId, 'test-cases', testCaseId, 'edit']" class="btn btn-outline btn-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </a>
+        <button class="btn btn-outline btn-sm" (click)="showDeleteModal.set(true)" style="color:hsl(var(--destructive));border-color:hsl(var(--destructive)/0.3)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+      <div class="card">
+        <h2 style="font-size:0.875rem;font-weight:600;color:hsl(var(--muted-foreground));text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1rem">Details</h2>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;font-size:0.875rem">
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:hsl(var(--muted-foreground))">Priority</span>
+            <span [class]="priorityClass(tc()!.priority)">{{ tc()!.priority | titlecase }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:hsl(var(--muted-foreground))">Status</span>
+            <span class="badge">{{ tc()!.status | titlecase }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:hsl(var(--muted-foreground))">Automation</span>
+            <span>{{ tc()!.automationStatus }}</span>
+          </div>
+        </div>
+      </div>
+      @if (tc()!.labels?.length) {
+        <div class="card">
+          <h2 style="font-size:0.875rem;font-weight:600;color:hsl(var(--muted-foreground));text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1rem">Labels</h2>
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+            @for (label of tc()!.labels; track label) {
+              <span class="badge">{{ label }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (tc()!.description) {
+      <div class="card">
+        <h2 style="font-size:0.875rem;font-weight:600;color:hsl(var(--muted-foreground));text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">Description</h2>
+        <p style="font-size:0.875rem;white-space:pre-wrap">{{ tc()!.description }}</p>
+      </div>
+    }
+
+    @if (tc()!.steps?.length) {
+      <div class="card">
+        <h2 style="font-size:0.875rem;font-weight:600;color:hsl(var(--muted-foreground));text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1rem">Test Steps</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:48px">#</th><th>Action</th><th>Expected Result</th></tr></thead>
+            <tbody>
+              @for (step of tc()!.steps; track step.order) {
+                <tr>
+                  <td style="color:hsl(var(--muted-foreground));font-size:0.8125rem">{{ step.order }}</td>
+                  <td style="font-size:0.875rem">{{ step.action }}</td>
+                  <td style="font-size:0.875rem;color:hsl(var(--muted-foreground))">{{ step.expected }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+@if (showDeleteModal()) {
+  <div class="modal-backdrop" (click)="showDeleteModal.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()" style="max-width:28rem">
+      <div class="modal-title">Delete Test Case</div>
+      <div class="modal-desc">Delete "{{ tc()!.title }}"? This cannot be undone.</div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="showDeleteModal.set(false)">Cancel</button>
+        <button class="btn btn-destructive" (click)="delete()">Delete</button>
+      </div>
+    </div>
+  </div>
+}
