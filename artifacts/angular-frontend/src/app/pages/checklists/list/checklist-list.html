@@ -79,15 +79,17 @@
                     <!-- Checkbox item preview (up to 4) -->
                     <div style="display:flex;flex-direction:column;gap:0.3rem;margin-bottom:0.625rem">
                       @for (item of cl.items.slice(0, 4); track item.id) {
-                        <div style="display:flex;align-items:center;gap:0.5rem">
-                          <div style="flex-shrink:0;width:14px;height:14px;border-radius:3px;border:1.5px solid;display:flex;align-items:center;justify-content:center"
-                               [style.borderColor]="item.checked ? '#16a34a' : 'hsl(var(--border))'"
-                               [style.background]="item.checked ? '#16a34a' : 'transparent'">
+                        <div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"
+                             (click)="toggleCardItem($event, group.meta.id, cl, item.id)">
+                          <button type="button"
+                            style="flex-shrink:0;width:14px;height:14px;border-radius:3px;border:1.5px solid;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;transition:all 0.15s"
+                            [style.borderColor]="item.checked ? '#16a34a' : 'hsl(var(--border))'"
+                            [style.background]="item.checked ? '#16a34a' : 'transparent'">
                             @if (item.checked) {
                               <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                             }
-                          </div>
-                          <span style="font-size:0.8rem;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"
+                          </button>
+                          <span style="font-size:0.8rem;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;transition:all 0.15s"
                                 [style.textDecoration]="item.checked ? 'line-through' : 'none'"
                                 [style.color]="item.checked ? 'hsl(var(--muted-foreground))' : 'inherit'">{{ item.title }}</span>
                         </div>

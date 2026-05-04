@@ -213,6 +213,37 @@ export class ChecklistList implements OnInit {
     });
   }
 
+  toggleCardItem(event: Event, groupId: number, cl: Checklist, itemId: string) {
+    event.stopPropagation();
+    const updatedItems = cl.items.map(i => i.id === itemId ? { ...i, checked: !i.checked } : i);
+    // Optimistic update
+    this.groups.update(gs => gs.map(g => g.meta.id === groupId
+      ? { ...g, lists: g.lists.map(c => c.id === cl.id ? { ...c, items: updatedItems } : c) }
+      : g
+    ));
+    this.api.updateGroupChecklist(groupId, cl.id, {
+      title: cl.title,
+      description: cl.description,
+      status: cl.status,
+      items: updatedItems,
+    }).subscribe({
+      next: updated => {
+        this.groups.update(gs => gs.map(g => g.meta.id === groupId
+          ? { ...g, lists: g.lists.map(c => c.id === updated.id ? updated : c) }
+          : g
+        ));
+      },
+      error: () => {
+        // Revert on failure
+        this.groups.update(gs => gs.map(g => g.meta.id === groupId
+          ? { ...g, lists: g.lists.map(c => c.id === cl.id ? cl : c) }
+          : g
+        ));
+        this.toast.show({ title: 'Failed to save', variant: 'destructive' });
+      }
+    });
+  }
+
   toggleCardMenu(key: string, event: Event) {
     event.preventDefault();
     event.stopPropagation();
