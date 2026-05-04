@@ -24,7 +24,7 @@
           <div class="sidebar-sub">
             <a routerLink="/projects" class="sidebar-sub-item" [class.active]="isActive('/projects')">All Projects</a>
             @for (project of projects(); track project.id) {
-              <a [routerLink]="['/projects', project.id]" class="sidebar-sub-item" [class.active]="isActive('/projects/' + project.id)" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block">
+              <a [routerLink]="['/projects', project.id]" class="sidebar-sub-item" [class.active]="isActive('/projects/' + project.id)" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
                 {{ project.name }}
               </a>
             }
