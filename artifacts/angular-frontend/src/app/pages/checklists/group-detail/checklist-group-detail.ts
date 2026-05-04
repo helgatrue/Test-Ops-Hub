@@ -4,6 +4,7 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Checklist, ChecklistGroup, ChecklistItem } from '../../../services/api.service';
 import { ToastService } from '../../../services/toast.service';
+import { GlobalMenuService } from '../../../services/global-menu.service';
 
 type Modal =
   | { kind: 'none' }
@@ -39,7 +40,7 @@ export class ChecklistGroupDetail implements OnInit {
 
   @ViewChild('clItemInput') clItemInput?: ElementRef<HTMLInputElement>;
 
-  constructor(private api: ApiService, private toast: ToastService, private route: ActivatedRoute, private router: Router) {}
+  constructor(private api: ApiService, private toast: ToastService, private route: ActivatedRoute, private router: Router, private globalMenu: GlobalMenuService) {}
 
   ngOnInit() {
     this.groupId = parseInt(this.route.snapshot.paramMap.get('groupId') ?? '0');
@@ -218,18 +219,30 @@ export class ChecklistGroupDetail implements OnInit {
     event.stopPropagation();
     if (this.openCardMenuId() === id) {
       this.openCardMenuId.set(null);
-      this.menuPos.set(null);
-      this.menuChecklist.set(null);
-    } else {
-      const btn = (event.currentTarget as HTMLElement);
-      const rect = btn.getBoundingClientRect();
-      this.menuPos.set({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
-      this.openCardMenuId.set(id);
-      const cl = this.checklists().find(c => c.id === id) ?? null;
-      this.menuChecklist.set(cl);
+      this.globalMenu.close();
+      return;
     }
+    const cl = this.checklists().find(c => c.id === id);
+    if (!cl) return;
+    const btn = event.currentTarget as HTMLElement;
+    const rect = btn.getBoundingClientRect();
+    this.openCardMenuId.set(id);
+    this.globalMenu.open(
+      { top: rect.bottom + 4, right: window.innerWidth - rect.right },
+      [
+        {
+          label: 'Edit',
+          action: () => this.openEditChecklist(cl, new MouseEvent('click')),
+        },
+        {
+          label: 'Delete',
+          danger: true,
+          action: () => this.openDeleteChecklist(cl, new MouseEvent('click')),
+        },
+      ]
+    );
   }
 
   @HostListener('document:click')
-  closeCardMenus() { this.openCardMenuId.set(null); this.menuPos.set(null); this.menuChecklist.set(null); }
+  closeCardMenus() { this.openCardMenuId.set(null); this.globalMenu.close(); }
 }

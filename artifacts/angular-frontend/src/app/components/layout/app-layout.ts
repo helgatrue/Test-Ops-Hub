@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiService, Project, ChecklistGroup } from '../../services/api.service';
+import { GlobalMenuService } from '../../services/global-menu.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -16,7 +17,7 @@ export class AppLayout implements OnInit {
   checklistsOpen = signal(false);
   currentUrl = signal('');
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private api: ApiService, private router: Router, public globalMenu: GlobalMenuService) {}
 
   ngOnInit() {
     this.api.getProjects().subscribe(p => this.projects.set(p));
@@ -39,4 +40,9 @@ export class AppLayout implements OnInit {
 
   isActive(path: string): boolean { return this.currentUrl() === path; }
   isActivePrefix(prefix: string): boolean { return this.currentUrl().startsWith(prefix); }
+
+  runMenuAction(action: () => void) {
+    action();
+    this.globalMenu.close();
+  }
 }
