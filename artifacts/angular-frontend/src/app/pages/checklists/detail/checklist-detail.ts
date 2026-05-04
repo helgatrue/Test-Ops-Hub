@@ -17,13 +17,13 @@ export class ChecklistDetail implements OnInit {
   loading = signal(true);
   saving = signal(false);
   itemInput = signal('');
+  inputFocused = signal(false);
   showDeleteModal = signal(false);
   showEditModal = signal(false);
   editTitle = signal('');
   editDescription = signal('');
-  inputFocused = signal(false);
 
-  @ViewChild('itemTextarea') itemTextarea!: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('newItemInput') newItemInput!: ElementRef<HTMLInputElement>;
 
   constructor(
     private api: ApiService,
@@ -69,25 +69,17 @@ export class ChecklistDetail implements OnInit {
     };
     this.save({ items: [...cl.items, newItem] });
     this.itemInput.set('');
-  }
-
-  onKeydown(event: KeyboardEvent) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      this.addItem();
+    if (this.newItemInput?.nativeElement) {
+      this.newItemInput.nativeElement.value = '';
+      this.newItemInput.nativeElement.focus();
     }
   }
 
-  onInput(event: Event) {
-    const ta = event.target as HTMLTextAreaElement;
-    this.itemInput.set(ta.value);
-    ta.style.height = 'auto';
-    ta.style.height = Math.max(38, ta.scrollHeight) + 'px';
-  }
-
-  autoResize(ta: HTMLTextAreaElement) {
-    ta.style.height = 'auto';
-    ta.style.height = Math.max(38, ta.scrollHeight) + 'px';
+  onKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.addItem();
+    }
   }
 
   removeItem(id: string) {
@@ -153,8 +145,7 @@ export class ChecklistDetail implements OnInit {
   }
 
   progressColor() {
-    const p = this.progress;
-    if (p === 100) return '#16a34a';
+    if (this.progress === 100) return '#16a34a';
     return 'hsl(var(--primary))';
   }
 }
