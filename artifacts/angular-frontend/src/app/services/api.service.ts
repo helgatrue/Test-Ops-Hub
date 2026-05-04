@@ -87,6 +87,14 @@ export interface TopFailingTest {
   failureCount: number;
 }
 
+export interface ChecklistGroup {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ChecklistItem {
   id: string;
   title: string;
@@ -181,6 +189,38 @@ export class ApiService {
 
   getTopFailingTests(limit = 5): Observable<TopFailingTest[]> {
     return this.http.get<TopFailingTest[]>(`/api/dashboard/top-failing-tests?limit=${limit}`);
+  }
+
+  getChecklistGroups(): Observable<ChecklistGroup[]> {
+    return this.http.get<ChecklistGroup[]>('/api/checklist-groups');
+  }
+
+  createChecklistGroup(data: { name: string; description?: string }): Observable<ChecklistGroup> {
+    return this.http.post<ChecklistGroup>('/api/checklist-groups', data);
+  }
+
+  updateChecklistGroup(id: number, data: { name?: string; description?: string }): Observable<ChecklistGroup> {
+    return this.http.put<ChecklistGroup>(`/api/checklist-groups/${id}`, data);
+  }
+
+  deleteChecklistGroup(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/checklist-groups/${id}`);
+  }
+
+  getGroupChecklists(groupId: number): Observable<Checklist[]> {
+    return this.http.get<Checklist[]>(`/api/checklist-groups/${groupId}/checklists`);
+  }
+
+  createGroupChecklist(groupId: number, data: { title: string; description?: string; items: ChecklistItem[] }): Observable<Checklist> {
+    return this.http.post<Checklist>(`/api/checklist-groups/${groupId}/checklists`, data);
+  }
+
+  updateGroupChecklist(groupId: number, checklistId: number, data: { title?: string; description?: string; status?: string; items?: ChecklistItem[] }): Observable<Checklist> {
+    return this.http.put<Checklist>(`/api/checklist-groups/${groupId}/checklists/${checklistId}`, data);
+  }
+
+  deleteGroupChecklist(groupId: number, checklistId: number): Observable<void> {
+    return this.http.delete<void>(`/api/checklist-groups/${groupId}/checklists/${checklistId}`);
   }
 
   getChecklists(projectId: number): Observable<Checklist[]> {

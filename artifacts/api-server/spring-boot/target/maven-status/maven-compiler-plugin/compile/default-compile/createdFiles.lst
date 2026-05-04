@@ -6,7 +6,9 @@ com/testops/api/repository/TestResultRepository.class
 com/testops/api/repository/TestRunRepository.class
 com/testops/api/converter/StringListConverter$1.class
 com/testops/api/config/CorsConfig$1.class
+com/testops/api/controller/ChecklistGroupController.class
 com/testops/api/dto/CreateTestCaseRequest.class
+com/testops/api/repository/ChecklistGroupRepository.class
 com/testops/api/repository/ProjectRepository.class
 com/testops/api/entity/TestCase.class
 com/testops/api/controller/HealthController.class
@@ -26,6 +28,7 @@ com/testops/api/controller/ChecklistController.class
 com/testops/api/converter/StringListConverter.class
 com/testops/api/dto/UpdateTestCaseRequest.class
 com/testops/api/controller/ProjectController.class
+com/testops/api/dto/UpdateChecklistGroupRequest.class
 com/testops/api/TestOpsApplication.class
 com/testops/api/dto/CreateTestRunRequest.class
 com/testops/api/dto/UpdateProjectRequest.class
@@ -33,7 +36,9 @@ com/testops/api/converter/ChecklistItemListConverter.class
 com/testops/api/entity/TestResult.class
 com/testops/api/repository/ChecklistRepository.class
 com/testops/api/dto/UpdateChecklistRequest.class
+com/testops/api/entity/ChecklistGroup.class
 com/testops/api/dto/Step.class
 com/testops/api/dto/CreateChecklistRequest.class
 com/testops/api/dto/ChecklistItem.class
+com/testops/api/dto/CreateChecklistGroupRequest.class
 com/testops/api/entity/TestRun.class

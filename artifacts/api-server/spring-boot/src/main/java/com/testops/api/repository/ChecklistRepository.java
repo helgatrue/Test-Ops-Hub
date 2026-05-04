@@ -12,4 +12,7 @@ public interface ChecklistRepository extends JpaRepository<Checklist, Long> {
     List<Checklist> findByProjectIdOrderByCreatedAtDesc(Long projectId);
     Optional<Checklist> findByIdAndProjectId(Long id, Long projectId);
     long countByProjectId(Long projectId);
+
+    List<Checklist> findByGroupIdOrderByCreatedAtDesc(Long groupId);
+    Optional<Checklist> findByIdAndGroupId(Long id, Long groupId);
 }

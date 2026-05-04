@@ -1,10 +1,11 @@
-import { pgTable, serial, text, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const checklistsTable = pgTable("checklists", {
   id: serial("id").primaryKey(),
-  projectId: serial("project_id").notNull(),
+  projectId: integer("project_id"),
+  groupId: integer("group_id"),
   title: text("title").notNull(),
   description: text("description"),
   status: text("status").default("active").notNull(),

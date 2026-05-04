@@ -1,24 +1,18 @@
 <div style="display:flex;flex-direction:column;gap:1.5rem">
 
   <!-- Header -->
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
     <div>
       <h1 style="font-size:1.875rem;font-weight:700;letter-spacing:-0.025em">Checklists</h1>
-      <p style="color:hsl(var(--muted-foreground));margin-top:0.25rem;font-size:0.875rem">Manual test checklists for verifying features across projects.</p>
+      <p style="color:hsl(var(--muted-foreground));margin-top:0.25rem;font-size:0.875rem">Manual verification checklists, organised by project.</p>
     </div>
-    <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
-      @if (allProjects.length > 0) {
-        <select class="input" style="width:auto;min-width:160px;font-size:0.875rem" [ngModel]="filterProjectId()" (ngModelChange)="filterProjectId.set($event ? +$event : null)">
-          <option [ngValue]="null">All Projects</option>
-          @for (p of allProjects; track p.id) {
-            <option [value]="p.id">{{ p.name }}</option>
-          }
-        </select>
-      }
-    </div>
+    <button class="btn btn-primary" (click)="openCreateGroup()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+      New Project
+    </button>
   </div>
 
-  <!-- Loading skeleton -->
+  <!-- Loading -->
   @if (loading()) {
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
       @for (i of [1,2,3,4,5,6]; track i) {
@@ -26,39 +20,44 @@
       }
     </div>
 
-  <!-- Empty: no checklists anywhere -->
-  } @else if (totalCount === 0) {
+  <!-- Empty state -->
+  } @else if (groups().length === 0) {
     <div style="text-align:center;padding:6rem 0;border:2px dashed hsl(var(--border));border-radius:var(--radius)">
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 1rem"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1" ry="1"/><path d="m9 14 2 2 4-4"/></svg>
-      <h3 style="font-size:1.125rem;font-weight:500;margin-bottom:0.25rem">No checklists yet</h3>
-      <p style="color:hsl(var(--muted-foreground));font-size:0.875rem;margin-bottom:1.25rem">Create a project, then add checklists to start tracking manual verifications.</p>
-      <button class="btn btn-primary" (click)="openCreateProject()">Create your first project</button>
+      <h3 style="font-size:1.125rem;font-weight:500;margin-bottom:0.25rem">No projects yet</h3>
+      <p style="color:hsl(var(--muted-foreground));font-size:0.875rem;margin-bottom:1.25rem">Create a project to start organising your checklists.</p>
+      <button class="btn btn-primary" (click)="openCreateGroup()">Create your first project</button>
     </div>
 
   } @else {
-    @for (group of filteredGroups; track group.project.id) {
+    @for (group of groups(); track group.meta.id) {
       <div>
-        <!-- Project group header -->
+        <!-- Group header -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.875rem;padding-bottom:0.625rem;border-bottom:1px solid hsl(var(--border))">
           <div style="display:flex;align-items:center;gap:0.5rem">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" style="flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            <a [routerLink]="['/projects', group.project.id]" style="font-size:0.9375rem;font-weight:600;text-decoration:none;color:inherit">{{ group.project.name }}</a>
+            <span style="font-size:0.9375rem;font-weight:600">{{ group.meta.name }}</span>
             <span class="badge" style="font-size:0.7rem">{{ group.lists.length }}</span>
           </div>
-          <button class="btn btn-outline btn-sm" (click)="openNewChecklist(group.project.id)">
+          <button class="btn btn-outline btn-sm" (click)="openNewChecklist(group.meta.id)">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Checklist
           </button>
         </div>
 
-        <!-- Checklist cards -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
-          @for (cl of group.lists; track cl.id) {
-            <div style="position:relative">
-              <a [routerLink]="['/projects', group.project.id, 'checklists', cl.id]" style="display:block;text-decoration:none;color:inherit">
-                <div class="card" style="transition:border-color 0.15s;cursor:pointer" onmouseenter="this.style.borderColor='hsl(221 83% 53% / 0.5)'" onmouseleave="this.style.borderColor='hsl(214 32% 91%)'">
+        <!-- Empty group -->
+        @if (group.lists.length === 0) {
+          <div style="text-align:center;padding:2rem;border:2px dashed hsl(var(--border));border-radius:var(--radius);color:hsl(var(--muted-foreground));font-size:0.875rem">
+            No checklists yet —
+            <button class="btn btn-ghost btn-sm" style="display:inline;padding:0 0.25rem;font-size:0.875rem" (click)="openNewChecklist(group.meta.id)">add one</button>
+          </div>
+        } @else {
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
+            @for (cl of group.lists; track cl.id) {
+              <div style="position:relative">
+                <div class="card" style="transition:border-color 0.15s;cursor:default">
                   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;margin-bottom:0.625rem">
-                    <h3 style="font-size:0.9375rem;font-weight:600;line-height:1.3;padding-right:1.5rem">{{ cl.title }}</h3>
+                    <h3 style="font-size:0.9375rem;font-weight:600;line-height:1.3;padding-right:1.75rem">{{ cl.title }}</h3>
                     <span [class]="cl.status === 'archived' ? 'badge badge-skipped' : 'badge badge-passed'" style="white-space:nowrap;flex-shrink:0">{{ cl.status }}</span>
                   </div>
                   @if (cl.description) {
@@ -79,66 +78,61 @@
                   }
                   <div style="font-size:0.75rem;color:hsl(var(--muted-foreground))">Updated {{ timeAgo(cl.updatedAt) }}</div>
                 </div>
-              </a>
 
-              <!-- ⋮ menu -->
-              <div style="position:absolute;top:0.625rem;right:0.625rem">
-                <button class="btn btn-ghost btn-sm btn-icon" style="width:24px;height:24px;padding:0" (click)="toggleCardMenu(group.project.id + '-' + cl.id, $event)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                </button>
-                @if (openCardMenuId() === group.project.id + '-' + cl.id) {
-                  <div style="position:absolute;top:100%;right:0;margin-top:0.25rem;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,0.12);min-width:140px;z-index:50;overflow:hidden">
-                    <button class="dropdown-item" (click)="openEditChecklist(group.project.id, cl)">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                      Edit
-                    </button>
-                    <div style="height:1px;background:hsl(var(--border));margin:0.25rem 0"></div>
-                    <button class="dropdown-item danger" (click)="openDeleteChecklist(group.project.id, cl)">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                      Delete
-                    </button>
-                  </div>
-                }
+                <!-- ⋮ menu -->
+                <div style="position:absolute;top:0.625rem;right:0.625rem">
+                  <button class="btn btn-ghost btn-sm btn-icon" style="width:24px;height:24px;padding:0" (click)="toggleCardMenu(group.meta.id + '-' + cl.id, $event)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                  @if (openCardMenuId() === group.meta.id + '-' + cl.id) {
+                    <div style="position:absolute;top:100%;right:0;margin-top:0.25rem;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,0.12);min-width:130px;z-index:50;overflow:hidden">
+                      <button class="dropdown-item" (click)="openEditChecklist(group.meta.id, cl)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Edit
+                      </button>
+                      <div style="height:1px;background:hsl(var(--border));margin:0.25rem 0"></div>
+                      <button class="dropdown-item danger" (click)="openDeleteChecklist(group.meta.id, cl)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                        Delete
+                      </button>
+                    </div>
+                  }
+                </div>
               </div>
-            </div>
-          }
-        </div>
+            }
+          </div>
+        }
       </div>
-    }
-
-    @if (filteredGroups.length === 0) {
-      <div style="text-align:center;padding:3rem;color:hsl(var(--muted-foreground));font-size:0.875rem">No checklists found for the selected project.</div>
     }
   }
 </div>
 
 <!-- ── Modals ─────────────────────────────────────────────────────────────── -->
 
-<!-- Create Project -->
-@if (modal().kind === 'createProject') {
+<!-- Create Project (Group) -->
+@if (modal().kind === 'createGroup') {
   <div class="modal-backdrop" (click)="closeModal()">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-title">New Project</div>
-      <div class="modal-desc">Create a new project to organise your checklists.</div>
+      <div class="modal-desc">Create a project to organise checklists in this workspace.</div>
       <div style="display:flex;flex-direction:column;gap:0.875rem">
-        <div><label class="label">Name *</label><input class="input" [ngModel]="formProjectName()" (ngModelChange)="formProjectName.set($event)" placeholder="e.g. Frontend Web App" /></div>
-        <div><label class="label">Description</label><textarea class="input" rows="2" [ngModel]="formProjectDesc()" (ngModelChange)="formProjectDesc.set($event)" placeholder="What does this project cover?"></textarea></div>
-        <div><label class="label">Repo URL</label><input class="input" [ngModel]="formProjectRepo()" (ngModelChange)="formProjectRepo.set($event)" placeholder="https://github.com/..." /></div>
+        <div><label class="label">Name *</label><input class="input" [ngModel]="formGroupName()" (ngModelChange)="formGroupName.set($event)" placeholder="e.g. Release 3.0" /></div>
+        <div><label class="label">Description</label><textarea class="input" rows="2" [ngModel]="formGroupDesc()" (ngModelChange)="formGroupDesc.set($event)" placeholder="What does this project cover?"></textarea></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
-        <button class="btn btn-primary" (click)="submitCreateProject()" [disabled]="saving()">{{ saving() ? 'Creating…' : 'Create' }}</button>
+        <button class="btn btn-primary" (click)="submitCreateGroup()" [disabled]="saving()">{{ saving() ? 'Creating…' : 'Create' }}</button>
       </div>
     </div>
   </div>
 }
 
-<!-- New Checklist -->
+<!-- Add Checklist -->
 @if (modal().kind === 'newChecklist') {
   <div class="modal-backdrop" (click)="closeModal()">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-title">Add Checklist</div>
-      <div class="modal-desc">Add a checklist to this project. You can add items after creating it.</div>
+      <div class="modal-desc">Add a checklist to this project. Items can be added after creating it.</div>
       <div style="display:flex;flex-direction:column;gap:0.875rem">
         <div><label class="label">Title *</label><input class="input" [ngModel]="formClTitle()" (ngModelChange)="formClTitle.set($event)" placeholder="e.g. Release smoke test" /></div>
         <div><label class="label">Description</label><textarea class="input" rows="2" [ngModel]="formClDesc()" (ngModelChange)="formClDesc.set($event)" placeholder="What does this checklist verify?"></textarea></div>
@@ -156,7 +150,7 @@
   <div class="modal-backdrop" (click)="closeModal()">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-title">Edit Checklist</div>
-      <div class="modal-desc">Update the title and description. Open the checklist to edit items.</div>
+      <div class="modal-desc">Update the title and description.</div>
       <div style="display:flex;flex-direction:column;gap:0.875rem">
         <div><label class="label">Title *</label><input class="input" [ngModel]="formClTitle()" (ngModelChange)="formClTitle.set($event)" /></div>
         <div><label class="label">Description</label><textarea class="input" rows="2" [ngModel]="formClDesc()" (ngModelChange)="formClDesc.set($event)"></textarea></div>
