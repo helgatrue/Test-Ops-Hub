@@ -43,6 +43,7 @@ export interface UpdateProjectBody {
 
 export interface TestStep {
   order: number;
+  name?: string;
   action: string;
   expected: string;
 }
@@ -61,6 +62,7 @@ export type TestCaseStatus =
   (typeof TestCaseStatus)[keyof typeof TestCaseStatus];
 
 export const TestCaseStatus = {
+  design: "design",
   draft: "draft",
   active: "active",
   deprecated: "deprecated",
@@ -85,6 +87,12 @@ export interface TestCase {
   labels: string[];
   steps: TestStep[];
   automationStatus: TestCaseAutomationStatus;
+  application?: string | null;
+  classification?: string | null;
+  preConditions?: string | null;
+  designer?: string | null;
+  testCategory?: string | null;
+  testType?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -103,6 +111,7 @@ export type CreateTestCaseBodyStatus =
   (typeof CreateTestCaseBodyStatus)[keyof typeof CreateTestCaseBodyStatus];
 
 export const CreateTestCaseBodyStatus = {
+  design: "design",
   draft: "draft",
   active: "active",
   deprecated: "deprecated",
@@ -125,6 +134,12 @@ export interface CreateTestCaseBody {
   labels?: string[];
   steps?: TestStep[];
   automationStatus?: CreateTestCaseBodyAutomationStatus;
+  application?: string;
+  classification?: string;
+  preConditions?: string;
+  designer?: string;
+  testCategory?: string;
+  testType?: string;
 }
 
 export type UpdateTestCaseBodyPriority =
@@ -141,6 +156,7 @@ export type UpdateTestCaseBodyStatus =
   (typeof UpdateTestCaseBodyStatus)[keyof typeof UpdateTestCaseBodyStatus];
 
 export const UpdateTestCaseBodyStatus = {
+  design: "design",
   draft: "draft",
   active: "active",
   deprecated: "deprecated",
@@ -163,6 +179,12 @@ export interface UpdateTestCaseBody {
   labels?: string[];
   steps?: TestStep[];
   automationStatus?: UpdateTestCaseBodyAutomationStatus;
+  application?: string;
+  classification?: string;
+  preConditions?: string;
+  designer?: string;
+  testCategory?: string;
+  testType?: string;
 }
 
 export type TestRunStatus = (typeof TestRunStatus)[keyof typeof TestRunStatus];

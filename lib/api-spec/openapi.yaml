@@ -669,6 +669,8 @@ components:
       properties:
         order:
           type: integer
+        name:
+          type: string
         action:
           type: string
         expected:
@@ -695,7 +697,7 @@ components:
           enum: [low, medium, high, critical]
         status:
           type: string
-          enum: [draft, active, deprecated]
+          enum: [design, draft, active, deprecated]
         labels:
           type: array
           items:
@@ -707,6 +709,24 @@ components:
         automationStatus:
           type: string
           enum: [manual, automated, to_automate]
+        application:
+          type: string
+          nullable: true
+        classification:
+          type: string
+          nullable: true
+        preConditions:
+          type: string
+          nullable: true
+        designer:
+          type: string
+          nullable: true
+        testCategory:
+          type: string
+          nullable: true
+        testType:
+          type: string
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -738,8 +758,8 @@ components:
           default: medium
         status:
           type: string
-          enum: [draft, active, deprecated]
-          default: draft
+          enum: [design, draft, active, deprecated]
+          default: design
         labels:
           type: array
           items:
@@ -752,6 +772,18 @@ components:
           type: string
           enum: [manual, automated, to_automate]
           default: manual
+        application:
+          type: string
+        classification:
+          type: string
+        preConditions:
+          type: string
+        designer:
+          type: string
+        testCategory:
+          type: string
+        testType:
+          type: string
       required:
         - title
 
@@ -767,7 +799,7 @@ components:
           enum: [low, medium, high, critical]
         status:
           type: string
-          enum: [draft, active, deprecated]
+          enum: [design, draft, active, deprecated]
         labels:
           type: array
           items:
@@ -779,6 +811,18 @@ components:
         automationStatus:
           type: string
           enum: [manual, automated, to_automate]
+        application:
+          type: string
+        classification:
+          type: string
+        preConditions:
+          type: string
+        designer:
+          type: string
+        testCategory:
+          type: string
+        testType:
+          type: string
 
     # Test run schemas
     TestRun:

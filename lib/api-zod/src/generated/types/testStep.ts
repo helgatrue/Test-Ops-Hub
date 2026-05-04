@@ -8,6 +8,7 @@
 
 export interface TestStep {
   order: number;
+  name?: string;
   action: string;
   expected: string;
 }

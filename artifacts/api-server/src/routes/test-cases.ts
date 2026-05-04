@@ -47,10 +47,16 @@ router.post("/projects/:projectId/test-cases", async (req, res) => {
       title: body.title,
       description: body.description,
       priority: body.priority ?? "medium",
-      status: body.status ?? "draft",
+      status: body.status ?? "design",
       labels: (body.labels as string[]) ?? [],
-      steps: (body.steps as Array<{ order: number; action: string; expected: string }>) ?? [],
+      steps: (body.steps as Array<{ order: number; name: string; action: string; expected: string }>) ?? [],
       automationStatus: body.automationStatus ?? "manual",
+      application: body.application,
+      classification: body.classification,
+      preConditions: body.preConditions,
+      designer: body.designer,
+      testCategory: body.testCategory,
+      testType: body.testType,
     })
     .returning();
 

@@ -18,4 +18,10 @@ export interface CreateTestCaseBody {
   labels?: string[];
   steps?: TestStep[];
   automationStatus?: CreateTestCaseBodyAutomationStatus;
+  application?: string;
+  classification?: string;
+  preConditions?: string;
+  designer?: string;
+  testCategory?: string;
+  testType?: string;
 }

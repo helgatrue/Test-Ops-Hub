@@ -11,12 +11,18 @@ export const testCasesTable = pgTable("test_cases", {
   title: text("title").notNull(),
   description: text("description"),
   priority: text("priority").notNull().default("medium"),
-  status: text("status").notNull().default("draft"),
+  status: text("status").notNull().default("design"),
   labels: jsonb("labels").$type<string[]>().default([]),
   steps: jsonb("steps")
-    .$type<Array<{ order: number; action: string; expected: string }>>()
+    .$type<Array<{ order: number; name: string; action: string; expected: string }>>()
     .default([]),
   automationStatus: text("automation_status").notNull().default("manual"),
+  application: text("application"),
+  classification: text("classification"),
+  preConditions: text("pre_conditions"),
+  designer: text("designer"),
+  testCategory: text("test_category"),
+  testType: text("test_type"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

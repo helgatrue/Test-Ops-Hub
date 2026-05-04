@@ -10,6 +10,7 @@ export type UpdateTestCaseBodyStatus =
   (typeof UpdateTestCaseBodyStatus)[keyof typeof UpdateTestCaseBodyStatus];
 
 export const UpdateTestCaseBodyStatus = {
+  design: "design",
   draft: "draft",
   active: "active",
   deprecated: "deprecated",

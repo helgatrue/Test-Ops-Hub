@@ -24,7 +24,13 @@ export interface TestCase {
   status: string;
   automationStatus: string;
   labels: string[];
-  steps: Array<{ order: number; action: string; expected: string }>;
+  steps: Array<{ order: number; name?: string; action: string; expected: string }>;
+  application?: string;
+  classification?: string;
+  preConditions?: string;
+  designer?: string;
+  testCategory?: string;
+  testType?: string;
   createdAt: string;
   updatedAt: string;
 }

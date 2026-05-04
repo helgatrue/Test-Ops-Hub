@@ -6,6 +6,7 @@
     <h1 style="font-size:1.875rem;font-weight:700">New Test Case</h1>
   </div>
 
+  <!-- Basic Info -->
   <div class="card">
     <h2 style="font-size:0.875rem;font-weight:600;margin-bottom:1rem">Basic Info</h2>
     <div style="display:flex;flex-direction:column;gap:1rem">
@@ -33,6 +34,122 @@
     </div>
   </div>
 
+  <!-- Additional Fields -->
+  <div class="card">
+    <h2 style="font-size:0.875rem;font-weight:600;margin-bottom:1rem">Additional Info</h2>
+    <div style="display:flex;flex-direction:column;gap:1.25rem">
+
+      <!-- Row 1: Application + Classification -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div>
+          <label class="label">Application</label>
+          <input class="input" [ngModel]="application()" (ngModelChange)="application.set($event)" placeholder="e.g. Web, Mobile, API" />
+        </div>
+        <div>
+          <label class="label">Classification</label>
+          <select class="input" [ngModel]="classification()" (ngModelChange)="classification.set($event)">
+            @for (opt of classificationOptions(); track opt) {
+              <option [value]="opt">{{ formatOption(opt) }}</option>
+            }
+          </select>
+          @if (addingFor() !== 'classification') {
+            <button style="font-size:0.75rem;color:hsl(var(--primary));background:none;border:none;cursor:pointer;padding:0.25rem 0" (click)="startAdd('classification')">+ Add option</button>
+          } @else {
+            <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+              <input class="input" style="flex:1;padding:0.375rem 0.5rem;font-size:0.8125rem" [ngModel]="newOptionValue()" (ngModelChange)="newOptionValue.set($event)" (keydown.enter)="confirmAdd('classification', classificationOptions, classification)" placeholder="New option..." />
+              <button class="btn btn-primary btn-sm" (click)="confirmAdd('classification', classificationOptions, classification)">Add</button>
+              <button class="btn btn-ghost btn-sm" (click)="cancelAdd()">✕</button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Pre-Conditions -->
+      <div>
+        <label class="label">Pre-Conditions</label>
+        <textarea class="input" rows="2" [ngModel]="preConditions()" (ngModelChange)="preConditions.set($event)" placeholder="Conditions that must be met before executing this test..."></textarea>
+      </div>
+
+      <!-- Row 2: Status + Designer -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div>
+          <label class="label">Status</label>
+          <select class="input" [ngModel]="status()" (ngModelChange)="status.set($event)">
+            @for (opt of statusOptions(); track opt) {
+              <option [value]="opt">{{ formatOption(opt) }}</option>
+            }
+          </select>
+          @if (addingFor() !== 'status') {
+            <button style="font-size:0.75rem;color:hsl(var(--primary));background:none;border:none;cursor:pointer;padding:0.25rem 0" (click)="startAdd('status')">+ Add option</button>
+          } @else {
+            <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+              <input class="input" style="flex:1;padding:0.375rem 0.5rem;font-size:0.8125rem" [ngModel]="newOptionValue()" (ngModelChange)="newOptionValue.set($event)" (keydown.enter)="confirmAdd('status', statusOptions, status)" placeholder="New option..." />
+              <button class="btn btn-primary btn-sm" (click)="confirmAdd('status', statusOptions, status)">Add</button>
+              <button class="btn btn-ghost btn-sm" (click)="cancelAdd()">✕</button>
+            </div>
+          }
+        </div>
+        <div>
+          <label class="label">Designer</label>
+          <select class="input" [ngModel]="designer()" (ngModelChange)="designer.set($event)">
+            <option value="">— None —</option>
+            @for (opt of designerOptions(); track opt) {
+              <option [value]="opt">{{ opt }}</option>
+            }
+          </select>
+          @if (addingFor() !== 'designer') {
+            <button style="font-size:0.75rem;color:hsl(var(--primary));background:none;border:none;cursor:pointer;padding:0.25rem 0" (click)="startAdd('designer')">+ Add QA</button>
+          } @else {
+            <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+              <input class="input" style="flex:1;padding:0.375rem 0.5rem;font-size:0.8125rem" [ngModel]="newOptionValue()" (ngModelChange)="newOptionValue.set($event)" (keydown.enter)="confirmAdd('designer', designerOptions, designer)" placeholder="QA name..." />
+              <button class="btn btn-primary btn-sm" (click)="confirmAdd('designer', designerOptions, designer)">Add</button>
+              <button class="btn btn-ghost btn-sm" (click)="cancelAdd()">✕</button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Row 3: Test Category + Test Type -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div>
+          <label class="label">Test Category</label>
+          <select class="input" [ngModel]="testCategory()" (ngModelChange)="testCategory.set($event)">
+            @for (opt of testCategoryOptions(); track opt) {
+              <option [value]="opt">{{ formatOption(opt) }}</option>
+            }
+          </select>
+          @if (addingFor() !== 'testCategory') {
+            <button style="font-size:0.75rem;color:hsl(var(--primary));background:none;border:none;cursor:pointer;padding:0.25rem 0" (click)="startAdd('testCategory')">+ Add option</button>
+          } @else {
+            <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+              <input class="input" style="flex:1;padding:0.375rem 0.5rem;font-size:0.8125rem" [ngModel]="newOptionValue()" (ngModelChange)="newOptionValue.set($event)" (keydown.enter)="confirmAdd('testCategory', testCategoryOptions, testCategory)" placeholder="New option..." />
+              <button class="btn btn-primary btn-sm" (click)="confirmAdd('testCategory', testCategoryOptions, testCategory)">Add</button>
+              <button class="btn btn-ghost btn-sm" (click)="cancelAdd()">✕</button>
+            </div>
+          }
+        </div>
+        <div>
+          <label class="label">Test Type</label>
+          <select class="input" [ngModel]="testType()" (ngModelChange)="testType.set($event)">
+            @for (opt of testTypeOptions(); track opt) {
+              <option [value]="opt">{{ formatOption(opt) }}</option>
+            }
+          </select>
+          @if (addingFor() !== 'testType') {
+            <button style="font-size:0.75rem;color:hsl(var(--primary));background:none;border:none;cursor:pointer;padding:0.25rem 0" (click)="startAdd('testType')">+ Add option</button>
+          } @else {
+            <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+              <input class="input" style="flex:1;padding:0.375rem 0.5rem;font-size:0.8125rem" [ngModel]="newOptionValue()" (ngModelChange)="newOptionValue.set($event)" (keydown.enter)="confirmAdd('testType', testTypeOptions, testType)" placeholder="New option..." />
+              <button class="btn btn-primary btn-sm" (click)="confirmAdd('testType', testTypeOptions, testType)">Add</button>
+              <button class="btn btn-ghost btn-sm" (click)="cancelAdd()">✕</button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Labels -->
   <div class="card">
     <h2 style="font-size:0.875rem;font-weight:600;margin-bottom:1rem">Labels</h2>
     <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem">
@@ -46,19 +163,27 @@
     </div>
   </div>
 
+  <!-- Test Steps -->
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-      <h2 style="font-size:0.875rem;font-weight:600">Test Steps</h2>
+      <h2 style="font-size:0.875rem;font-weight:600">Design Steps</h2>
       <button class="btn btn-outline btn-sm" (click)="addStep()">+ Add Step</button>
     </div>
     @for (step of steps(); track $index; let i = $index) {
-      <div style="display:grid;grid-template-columns:auto 1fr 1fr auto;gap:0.75rem;align-items:start;margin-bottom:0.75rem">
-        <span style="padding:0.5rem 0;font-size:0.75rem;color:hsl(var(--muted-foreground));width:1.5rem;text-align:center">{{ i + 1 }}</span>
-        <div><label class="label" style="font-size:0.75rem">Action</label><input class="input" [ngModel]="step.action" (ngModelChange)="updateStep(i, 'action', $event)" placeholder="Step action..." /></div>
-        <div><label class="label" style="font-size:0.75rem">Expected</label><input class="input" [ngModel]="step.expected" (ngModelChange)="updateStep(i, 'expected', $event)" placeholder="Expected result..." /></div>
-        <button class="btn btn-ghost btn-sm btn-icon" (click)="removeStep(i)" style="color:hsl(var(--destructive));margin-top:1.5rem">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-        </button>
+      <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);padding:0.75rem;margin-bottom:0.75rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+          <span style="font-size:0.75rem;font-weight:600;color:hsl(var(--muted-foreground))">Step {{ i + 1 }}</span>
+          <button class="btn btn-ghost btn-sm btn-icon" (click)="removeStep(i)" style="color:hsl(var(--destructive))">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <div><label class="label" style="font-size:0.75rem">Step Name</label><input class="input" [ngModel]="step.name" (ngModelChange)="updateStep(i, 'name', $event)" placeholder="Name this step..." /></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+            <div><label class="label" style="font-size:0.75rem">Action</label><input class="input" [ngModel]="step.action" (ngModelChange)="updateStep(i, 'action', $event)" placeholder="Step action..." /></div>
+            <div><label class="label" style="font-size:0.75rem">Expected Result</label><input class="input" [ngModel]="step.expected" (ngModelChange)="updateStep(i, 'expected', $event)" placeholder="Expected result..." /></div>
+          </div>
+        </div>
       </div>
     }
     @if (steps().length === 0) {

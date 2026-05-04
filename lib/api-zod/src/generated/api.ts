@@ -114,16 +114,23 @@ export const ListTestCasesResponseItem = zod.object({
   title: zod.string(),
   description: zod.string().nullish(),
   priority: zod.enum(["low", "medium", "high", "critical"]),
-  status: zod.enum(["draft", "active", "deprecated"]),
+  status: zod.enum(["design", "draft", "active", "deprecated"]),
   labels: zod.array(zod.string()),
   steps: zod.array(
     zod.object({
       order: zod.number(),
+      name: zod.string().optional(),
       action: zod.string(),
       expected: zod.string(),
     }),
   ),
   automationStatus: zod.enum(["manual", "automated", "to_automate"]),
+  application: zod.string().nullish(),
+  classification: zod.string().nullish(),
+  preConditions: zod.string().nullish(),
+  designer: zod.string().nullish(),
+  testCategory: zod.string().nullish(),
+  testType: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -137,7 +144,7 @@ export const CreateTestCaseParams = zod.object({
 });
 
 export const createTestCaseBodyPriorityDefault = `medium`;
-export const createTestCaseBodyStatusDefault = `draft`;
+export const createTestCaseBodyStatusDefault = `design`;
 export const createTestCaseBodyAutomationStatusDefault = `manual`;
 
 export const CreateTestCaseBody = zod.object({
@@ -147,13 +154,14 @@ export const CreateTestCaseBody = zod.object({
     .enum(["low", "medium", "high", "critical"])
     .default(createTestCaseBodyPriorityDefault),
   status: zod
-    .enum(["draft", "active", "deprecated"])
+    .enum(["design", "draft", "active", "deprecated"])
     .default(createTestCaseBodyStatusDefault),
   labels: zod.array(zod.string()).optional(),
   steps: zod
     .array(
       zod.object({
         order: zod.number(),
+        name: zod.string().optional(),
         action: zod.string(),
         expected: zod.string(),
       }),
@@ -162,6 +170,12 @@ export const CreateTestCaseBody = zod.object({
   automationStatus: zod
     .enum(["manual", "automated", "to_automate"])
     .default(createTestCaseBodyAutomationStatusDefault),
+  application: zod.string().optional(),
+  classification: zod.string().optional(),
+  preConditions: zod.string().optional(),
+  designer: zod.string().optional(),
+  testCategory: zod.string().optional(),
+  testType: zod.string().optional(),
 });
 
 /**
@@ -178,16 +192,23 @@ export const GetTestCaseResponse = zod.object({
   title: zod.string(),
   description: zod.string().nullish(),
   priority: zod.enum(["low", "medium", "high", "critical"]),
-  status: zod.enum(["draft", "active", "deprecated"]),
+  status: zod.enum(["design", "draft", "active", "deprecated"]),
   labels: zod.array(zod.string()),
   steps: zod.array(
     zod.object({
       order: zod.number(),
+      name: zod.string().optional(),
       action: zod.string(),
       expected: zod.string(),
     }),
   ),
   automationStatus: zod.enum(["manual", "automated", "to_automate"]),
+  application: zod.string().nullish(),
+  classification: zod.string().nullish(),
+  preConditions: zod.string().nullish(),
+  designer: zod.string().nullish(),
+  testCategory: zod.string().nullish(),
+  testType: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -204,18 +225,25 @@ export const UpdateTestCaseBody = zod.object({
   title: zod.string().optional(),
   description: zod.string().optional(),
   priority: zod.enum(["low", "medium", "high", "critical"]).optional(),
-  status: zod.enum(["draft", "active", "deprecated"]).optional(),
+  status: zod.enum(["design", "draft", "active", "deprecated"]).optional(),
   labels: zod.array(zod.string()).optional(),
   steps: zod
     .array(
       zod.object({
         order: zod.number(),
+        name: zod.string().optional(),
         action: zod.string(),
         expected: zod.string(),
       }),
     )
     .optional(),
   automationStatus: zod.enum(["manual", "automated", "to_automate"]).optional(),
+  application: zod.string().optional(),
+  classification: zod.string().optional(),
+  preConditions: zod.string().optional(),
+  designer: zod.string().optional(),
+  testCategory: zod.string().optional(),
+  testType: zod.string().optional(),
 });
 
 export const UpdateTestCaseResponse = zod.object({
@@ -224,16 +252,23 @@ export const UpdateTestCaseResponse = zod.object({
   title: zod.string(),
   description: zod.string().nullish(),
   priority: zod.enum(["low", "medium", "high", "critical"]),
-  status: zod.enum(["draft", "active", "deprecated"]),
+  status: zod.enum(["design", "draft", "active", "deprecated"]),
   labels: zod.array(zod.string()),
   steps: zod.array(
     zod.object({
       order: zod.number(),
+      name: zod.string().optional(),
       action: zod.string(),
       expected: zod.string(),
     }),
   ),
   automationStatus: zod.enum(["manual", "automated", "to_automate"]),
+  application: zod.string().nullish(),
+  classification: zod.string().nullish(),
+  preConditions: zod.string().nullish(),
+  designer: zod.string().nullish(),
+  testCategory: zod.string().nullish(),
+  testType: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });

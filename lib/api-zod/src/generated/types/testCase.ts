@@ -20,6 +20,12 @@ export interface TestCase {
   labels: string[];
   steps: TestStep[];
   automationStatus: TestCaseAutomationStatus;
+  application?: string | null;
+  classification?: string | null;
+  preConditions?: string | null;
+  designer?: string | null;
+  testCategory?: string | null;
+  testType?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
