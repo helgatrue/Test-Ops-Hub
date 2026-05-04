@@ -80,10 +80,10 @@
 
         <!-- Existing items -->
         @for (item of checklist()!.items; track item.id) {
-          <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0.25rem;border-bottom:1px solid hsl(var(--border)/0.5);group"
+          <div style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.5rem 0.25rem;border-bottom:1px solid hsl(var(--border)/0.5);group"
                [style.opacity]="item.checked ? '0.7' : '1'">
             <!-- Checkbox button -->
-            <button style="flex-shrink:0;width:20px;height:20px;border-radius:4px;border:2px solid;display:flex;align-items:center;justify-content:center;transition:all 0.15s;cursor:pointer;background:transparent;padding:0"
+            <button style="flex-shrink:0;margin-top:0.175rem;width:20px;height:20px;border-radius:4px;border:2px solid;display:flex;align-items:center;justify-content:center;transition:all 0.15s;cursor:pointer;background:transparent;padding:0"
               [style.borderColor]="item.checked ? '#16a34a' : 'hsl(var(--border))'"
               [style.background]="item.checked ? '#16a34a' : 'transparent'"
               (click)="toggleItem(item)">
@@ -92,7 +92,7 @@
               }
             </button>
             <!-- Item text -->
-            <span style="flex:1;font-size:0.875rem;line-height:1.5;cursor:pointer;user-select:none"
+            <span style="flex:1;min-width:0;font-size:0.875rem;line-height:1.5;cursor:pointer;user-select:none;word-break:break-word;overflow-wrap:break-word"
               [style.textDecoration]="item.checked ? 'line-through' : 'none'"
               [style.color]="item.checked ? 'hsl(var(--muted-foreground))' : 'inherit'"
               (click)="toggleItem(item)">{{ item.title }}</span>
