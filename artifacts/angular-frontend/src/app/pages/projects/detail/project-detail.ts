@@ -41,9 +41,12 @@ export class ProjectDetail implements OnInit {
   constructor(private api: ApiService, private toast: ToastService, private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit() {
-    this.projectId = parseInt(this.route.snapshot.paramMap.get('projectId') ?? '0');
-    this.loadAll();
     this.api.getProjects().subscribe(p => this.allProjects.set(p));
+    this.route.paramMap.subscribe(params => {
+      this.projectId = parseInt(params.get('projectId') ?? '0');
+      this.loading.set(true);
+      this.loadAll();
+    });
   }
 
   loadAll() {

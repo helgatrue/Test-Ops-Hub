@@ -43,8 +43,11 @@ export class ChecklistGroupDetail implements OnInit {
   constructor(private api: ApiService, private toast: ToastService, private route: ActivatedRoute, private router: Router, private globalMenu: GlobalMenuService) {}
 
   ngOnInit() {
-    this.groupId = parseInt(this.route.snapshot.paramMap.get('groupId') ?? '0');
-    this.load();
+    this.route.paramMap.subscribe(params => {
+      this.groupId = parseInt(params.get('groupId') ?? '0');
+      this.loading.set(true);
+      this.load();
+    });
   }
 
   load() {
