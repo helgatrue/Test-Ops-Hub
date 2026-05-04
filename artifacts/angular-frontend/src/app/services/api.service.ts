@@ -211,6 +211,10 @@ export class ApiService {
     return this.http.get<Checklist[]>(`/api/checklist-groups/${groupId}/checklists`);
   }
 
+  getGroupChecklist(groupId: number, checklistId: number): Observable<Checklist> {
+    return this.http.get<Checklist>(`/api/checklist-groups/${groupId}/checklists/${checklistId}`);
+  }
+
   createGroupChecklist(groupId: number, data: { title: string; description?: string; items: ChecklistItem[] }): Observable<Checklist> {
     return this.http.post<Checklist>(`/api/checklist-groups/${groupId}/checklists`, data);
   }

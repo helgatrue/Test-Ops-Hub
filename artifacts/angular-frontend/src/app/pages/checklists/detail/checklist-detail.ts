@@ -50,7 +50,10 @@ export class ChecklistDetail implements OnInit {
   }
 
   load() {
-    this.api.getChecklist(this.projectId, this.checklistId).subscribe({
+    const call = this.fromGroup
+      ? this.api.getGroupChecklist(this.groupId, this.checklistId)
+      : this.api.getChecklist(this.projectId, this.checklistId);
+    call.subscribe({
       next: cl => { this.checklist.set(cl); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
@@ -123,12 +126,16 @@ export class ChecklistDetail implements OnInit {
     const cl = this.checklist();
     if (!cl) return;
     this.saving.set(true);
-    this.api.updateChecklist(this.projectId, this.checklistId, {
+    const payload = {
       title: patch.title ?? cl.title,
       description: patch.description ?? cl.description,
       status: patch.status ?? cl.status,
       items: patch.items ?? cl.items,
-    }).subscribe({
+    };
+    const call = this.fromGroup
+      ? this.api.updateGroupChecklist(this.groupId, this.checklistId, payload)
+      : this.api.updateChecklist(this.projectId, this.checklistId, payload);
+    call.subscribe({
       next: updated => { this.checklist.set(updated); this.saving.set(false); },
       error: e => { this.toast.show({ title: 'Failed to save', description: e.message, variant: 'destructive' }); this.saving.set(false); },
     });
@@ -149,8 +156,12 @@ export class ChecklistDetail implements OnInit {
   }
 
   delete() {
-    this.api.deleteChecklist(this.projectId, this.checklistId).subscribe({
-      next: () => { this.toast.show({ title: 'Checklist deleted' }); this.router.navigate(['/projects', this.projectId]); },
+    const call = this.fromGroup
+      ? this.api.deleteGroupChecklist(this.groupId, this.checklistId)
+      : this.api.deleteChecklist(this.projectId, this.checklistId);
+    const backRoute = this.fromGroup ? ['/checklists', this.groupId] : ['/projects', this.projectId];
+    call.subscribe({
+      next: () => { this.toast.show({ title: 'Checklist deleted' }); this.router.navigate(backRoute); },
       error: e => this.toast.show({ title: 'Failed to delete', description: e.message, variant: 'destructive' }),
     });
   }
