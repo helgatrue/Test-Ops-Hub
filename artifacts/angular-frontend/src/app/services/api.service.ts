@@ -87,6 +87,24 @@ export interface TopFailingTest {
   failureCount: number;
 }
 
+export interface ChecklistItem {
+  id: string;
+  title: string;
+  checked: boolean;
+  order: number;
+}
+
+export interface Checklist {
+  id: number;
+  projectId: number;
+  title: string;
+  description?: string;
+  status: string;
+  items: ChecklistItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   constructor(private http: HttpClient) {}
@@ -163,5 +181,25 @@ export class ApiService {
 
   getTopFailingTests(limit = 5): Observable<TopFailingTest[]> {
     return this.http.get<TopFailingTest[]>(`/api/dashboard/top-failing-tests?limit=${limit}`);
+  }
+
+  getChecklists(projectId: number): Observable<Checklist[]> {
+    return this.http.get<Checklist[]>(`/api/projects/${projectId}/checklists`);
+  }
+
+  getChecklist(projectId: number, checklistId: number): Observable<Checklist> {
+    return this.http.get<Checklist>(`/api/projects/${projectId}/checklists/${checklistId}`);
+  }
+
+  createChecklist(projectId: number, data: { title: string; description?: string; items: ChecklistItem[] }): Observable<Checklist> {
+    return this.http.post<Checklist>(`/api/projects/${projectId}/checklists`, data);
+  }
+
+  updateChecklist(projectId: number, checklistId: number, data: { title?: string; description?: string; status?: string; items?: ChecklistItem[] }): Observable<Checklist> {
+    return this.http.put<Checklist>(`/api/projects/${projectId}/checklists/${checklistId}`, data);
+  }
+
+  deleteChecklist(projectId: number, checklistId: number): Observable<void> {
+    return this.http.delete<void>(`/api/projects/${projectId}/checklists/${checklistId}`);
   }
 }

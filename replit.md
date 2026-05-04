@@ -4,6 +4,15 @@
 
 pnpm workspace monorepo. The frontend is Angular 21, the API is Java Spring Boot, and the database is PostgreSQL.
 
+## Pages / Features
+
+- **Dashboard** — pass rate trend, recent runs, top failing tests
+- **Projects** — list, create, detail (with Test Cases, Test Runs, Checklists tabs)
+- **Test Cases** — list, create, edit, detail (with steps/expected result, priority, labels, automation status)
+- **Test Runs** — list, create, detail (with per-test result assignment)
+- **Checklists** — global list page, per-project create/detail. Items stored as JSONB. Toggle checked/unchecked, check-all/uncheck-all, progress bar, archive/restore, delete.
+- **Settings** — placeholder settings page
+
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces

@@ -1,0 +1,58 @@
+<div style="max-width:48rem;margin:0 auto;display:flex;flex-direction:column;gap:1.5rem">
+  <div style="display:flex;align-items:center;gap:1rem">
+    <a [routerLink]="['/projects', projectId]" style="color:hsl(var(--muted-foreground));text-decoration:none;display:flex">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </a>
+    <h1 style="font-size:1.875rem;font-weight:700">New Checklist</h1>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:0.875rem;font-weight:600;margin-bottom:1rem">Checklist Details</h2>
+    <div style="display:flex;flex-direction:column;gap:1rem">
+      <div>
+        <label class="label">Title *</label>
+        <input class="input" [ngModel]="title()" (ngModelChange)="title.set($event)" placeholder="e.g. Release 2.5 Smoke Test" />
+      </div>
+      <div>
+        <label class="label">Description</label>
+        <textarea class="input" rows="3" [ngModel]="description()" (ngModelChange)="description.set($event)" placeholder="What does this checklist verify?"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:0.875rem;font-weight:600;margin-bottom:0.25rem">Checklist Items</h2>
+    <p style="font-size:0.8125rem;color:hsl(var(--muted-foreground));margin-bottom:1rem">Add items that testers will check off when running this checklist.</p>
+
+    <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
+      <input class="input" [ngModel]="itemInput()" (ngModelChange)="itemInput.set($event)" (keydown.enter)="addItem()" placeholder="Type an item and press Enter..." style="flex:1" />
+      <button class="btn btn-outline" (click)="addItem()">Add</button>
+    </div>
+
+    @if (items().length > 0) {
+      <div style="display:flex;flex-direction:column;gap:0.5rem">
+        @for (item of items(); track item.id; let i = $index) {
+          <div style="display:flex;align-items:center;gap:0.75rem;padding:0.625rem 0.75rem;background:hsl(var(--muted)/0.4);border:1px solid hsl(var(--border));border-radius:var(--radius)">
+            <span style="font-size:0.75rem;color:hsl(var(--muted-foreground));width:1.25rem;text-align:center;flex-shrink:0">{{ i + 1 }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" style="flex-shrink:0"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            <input class="input" style="border:none;background:transparent;padding:0;font-size:0.875rem;flex:1" [ngModel]="item.title" (ngModelChange)="updateItemTitle(item.id, $event)" placeholder="Item description..." />
+            <button class="btn btn-ghost btn-sm btn-icon" (click)="removeItem(item.id)" style="color:hsl(var(--muted-foreground));flex-shrink:0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <div style="text-align:center;padding:2.5rem;border:2px dashed hsl(var(--border));border-radius:var(--radius);color:hsl(var(--muted-foreground));font-size:0.875rem">
+        No items yet — type above to add your first check.
+      </div>
+    }
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:0.75rem">
+    <a [routerLink]="['/projects', projectId]" class="btn btn-outline">Cancel</a>
+    <button class="btn btn-primary" (click)="submit()" [disabled]="saving()">
+      {{ saving() ? 'Creating...' : 'Create Checklist' }}
+    </button>
+  </div>
+</div>

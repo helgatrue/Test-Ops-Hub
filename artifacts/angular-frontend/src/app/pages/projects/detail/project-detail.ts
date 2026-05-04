@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Project, TestCase, TestRun } from '../../../services/api.service';
+import { ApiService, Project, TestCase, TestRun, Checklist } from '../../../services/api.service';
 import { ToastService } from '../../../services/toast.service';
 
 @Component({
@@ -15,9 +15,10 @@ export class ProjectDetail implements OnInit {
   project = signal<Project | null>(null);
   testCases = signal<TestCase[]>([]);
   testRuns = signal<TestRun[]>([]);
+  checklists = signal<Checklist[]>([]);
   allProjects = signal<Project[]>([]);
   loading = signal(true);
-  activeTab = signal<'test-cases' | 'test-runs'>('test-cases');
+  activeTab = signal<'test-cases' | 'test-runs' | 'checklists'>('test-cases');
   search = signal('');
 
   showActionsMenu = signal(false);
@@ -49,6 +50,7 @@ export class ProjectDetail implements OnInit {
     this.api.getProject(this.projectId).subscribe({ next: p => { this.project.set(p); this.loading.set(false); }, error: () => this.loading.set(false) });
     this.api.getTestCases(this.projectId).subscribe(t => this.testCases.set(t));
     this.api.getTestRuns(this.projectId).subscribe(t => this.testRuns.set(t));
+    this.api.getChecklists(this.projectId).subscribe(c => this.checklists.set(c));
   }
 
   get filteredTestCases() {
@@ -163,6 +165,12 @@ export class ProjectDetail implements OnInit {
     if (s === 'skipped') return 'badge badge-skipped';
     return 'badge badge-pending';
   }
+
+  checklistProgress(cl: Checklist) {
+    if (!cl.items.length) return 0;
+    return Math.round((cl.items.filter(i => i.checked).length / cl.items.length) * 100);
+  }
+  checklistCheckedCount(cl: Checklist) { return cl.items.filter(i => i.checked).length; }
 
   timeAgo(iso: string) {
     const diff = Date.now() - new Date(iso).getTime();
