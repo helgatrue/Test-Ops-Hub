@@ -57,6 +57,13 @@ body {
   padding: 1.5rem;
 }
 
+.project-card {
+  transition: border-color 0.15s;
+}
+.project-card:hover {
+  border-color: hsl(var(--primary) / 0.4);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

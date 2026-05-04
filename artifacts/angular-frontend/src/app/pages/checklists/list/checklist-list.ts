@@ -1,18 +1,9 @@
-import { Component, OnInit, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Checklist, ChecklistGroup, ChecklistItem } from '../../../services/api.service';
+import { ApiService, ChecklistGroup } from '../../../services/api.service';
 import { ToastService } from '../../../services/toast.service';
-
-interface Group { meta: ChecklistGroup; lists: Checklist[]; }
-
-type Modal =
-  | { kind: 'none' }
-  | { kind: 'createGroup' }
-  | { kind: 'newChecklist'; groupId: number }
-  | { kind: 'editChecklist'; groupId: number; checklist: Checklist }
-  | { kind: 'deleteChecklist'; groupId: number; checklist: Checklist };
 
 @Component({
   selector: 'app-checklist-list',
@@ -20,21 +11,16 @@ type Modal =
   templateUrl: './checklist-list.html',
 })
 export class ChecklistList implements OnInit {
-  groups = signal<Group[]>([]);
+  groups = signal<ChecklistGroup[]>([]);
   loading = signal(true);
   saving = signal(false);
-  openCardMenuId = signal<string | null>(null);
-  modal = signal<Modal>({ kind: 'none' });
+  openMenuId = signal<number | null>(null);
+  showCreateModal = signal(false);
+  showEditModal = signal<ChecklistGroup | null>(null);
+  showDeleteModal = signal<ChecklistGroup | null>(null);
 
-  formGroupName = signal('');
-  formGroupDesc = signal('');
-  formClTitle = signal('');
-  formClDesc = signal('');
-  formClItems = signal<ChecklistItem[]>([]);
-  formClItemDraft = signal('');
-  formClItemFocused = signal(false);
-
-  @ViewChild('clItemInput') clItemInput?: ElementRef<HTMLInputElement>;
+  formName = signal('');
+  formDesc = signal('');
 
   constructor(private api: ApiService, private toast: ToastService) {}
 
@@ -43,213 +29,82 @@ export class ChecklistList implements OnInit {
   load() {
     this.loading.set(true);
     this.api.getChecklistGroups().subscribe({
-      next: groups => {
-        if (groups.length === 0) { this.groups.set([]); this.loading.set(false); return; }
-        let done = 0;
-        const result: Group[] = [];
-        const finalize = () => {
-          done++;
-          if (done === groups.length) {
-            result.sort((a, b) => a.meta.name.localeCompare(b.meta.name));
-            this.groups.set(result);
-            this.loading.set(false);
-          }
-        };
-        groups.forEach(g => {
-          this.api.getGroupChecklists(g.id).subscribe({
-            next: lists => { result.push({ meta: g, lists }); finalize(); },
-            error: () => { result.push({ meta: g, lists: [] }); finalize(); }
-          });
-        });
-      },
-      error: () => this.loading.set(false)
+      next: gs => { this.groups.set(gs.sort((a, b) => a.name.localeCompare(b.name))); this.loading.set(false); },
+      error: () => this.loading.set(false),
     });
   }
 
-  progress(cl: Checklist) {
-    if (!cl.items.length) return 0;
-    return Math.round((cl.items.filter(i => i.checked).length / cl.items.length) * 100);
-  }
-  checkedCount(cl: Checklist) { return cl.items.filter(i => i.checked).length; }
-  timeAgo(iso: string) {
-    const diff = Date.now() - new Date(iso).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+  openCreate() {
+    this.formName.set('');
+    this.formDesc.set('');
+    this.showCreateModal.set(true);
   }
 
-  closeModal() { this.modal.set({ kind: 'none' }); }
-
-  openCreateGroup() {
-    this.formGroupName.set('');
-    this.formGroupDesc.set('');
-    this.modal.set({ kind: 'createGroup' });
-  }
-
-  submitCreateGroup() {
-    if (!this.formGroupName().trim()) { this.toast.show({ title: 'Name required', variant: 'destructive' }); return; }
+  submitCreate() {
+    if (!this.formName().trim()) { this.toast.show({ title: 'Name required', variant: 'destructive' }); return; }
     this.saving.set(true);
-    this.api.createChecklistGroup({ name: this.formGroupName().trim(), description: this.formGroupDesc().trim() || undefined }).subscribe({
+    this.api.createChecklistGroup({ name: this.formName().trim(), description: this.formDesc().trim() || undefined }).subscribe({
       next: g => {
-        this.groups.update(gs => [...gs, { meta: g, lists: [] }].sort((a, b) => a.meta.name.localeCompare(b.meta.name)));
+        this.groups.update(gs => [...gs, g].sort((a, b) => a.name.localeCompare(b.name)));
         this.toast.show({ title: 'Project created' });
         this.saving.set(false);
-        this.closeModal();
+        this.showCreateModal.set(false);
       },
       error: e => { this.toast.show({ title: 'Failed', description: e.message, variant: 'destructive' }); this.saving.set(false); }
     });
   }
 
-  openNewChecklist(groupId: number) {
-    this.formClTitle.set('');
-    this.formClDesc.set('');
-    this.formClItems.set([]);
-    this.formClItemDraft.set('');
-    this.modal.set({ kind: 'newChecklist', groupId });
-  }
-
-  addDraftItem() {
-    const text = this.formClItemDraft().trim();
-    if (!text) return;
-    const newItem: ChecklistItem = {
-      id: Date.now().toString(),
-      title: text,
-      checked: false,
-      order: this.formClItems().length + 1,
-    };
-    this.formClItems.update(items => [...items, newItem]);
-    this.formClItemDraft.set('');
-    if (this.clItemInput?.nativeElement) {
-      this.clItemInput.nativeElement.value = '';
-      this.clItemInput.nativeElement.focus();
-    }
-  }
-
-  removeDraftItem(id: string) {
-    this.formClItems.update(items =>
-      items.filter(i => i.id !== id).map((item, idx) => ({ ...item, order: idx + 1 }))
-    );
-  }
-
-  onItemInputKeydown(event: KeyboardEvent) {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      this.addDraftItem();
-    }
-  }
-
-  openEditChecklist(groupId: number, cl: Checklist) {
-    this.formClTitle.set(cl.title);
-    this.formClDesc.set(cl.description ?? '');
-    this.modal.set({ kind: 'editChecklist', groupId, checklist: cl });
-    this.openCardMenuId.set(null);
-  }
-
-  openDeleteChecklist(groupId: number, cl: Checklist) {
-    this.modal.set({ kind: 'deleteChecklist', groupId, checklist: cl });
-    this.openCardMenuId.set(null);
-  }
-
-  submitNewChecklist() {
-    const m = this.modal();
-    if (m.kind !== 'newChecklist') return;
-    if (!this.formClTitle().trim()) { this.toast.show({ title: 'Title required', variant: 'destructive' }); return; }
-    // commit any in-progress draft item
-    const draftText = this.formClItemDraft().trim();
-    const finalItems = draftText
-      ? [...this.formClItems(), { id: Date.now().toString(), title: draftText, checked: false, order: this.formClItems().length + 1 }]
-      : this.formClItems();
-    this.saving.set(true);
-    this.api.createGroupChecklist(m.groupId, {
-      title: this.formClTitle().trim(),
-      description: this.formClDesc().trim() || undefined,
-      items: finalItems,
-    }).subscribe({
-      next: cl => {
-        this.groups.update(gs => gs.map(g => g.meta.id === m.groupId ? { ...g, lists: [...g.lists, cl] } : g));
-        this.toast.show({ title: 'Checklist created' });
-        this.saving.set(false);
-        this.closeModal();
-      },
-      error: e => { this.toast.show({ title: 'Failed', description: e.message, variant: 'destructive' }); this.saving.set(false); }
-    });
-  }
-
-  submitEditChecklist() {
-    const m = this.modal();
-    if (m.kind !== 'editChecklist') return;
-    if (!this.formClTitle().trim()) { this.toast.show({ title: 'Title required', variant: 'destructive' }); return; }
-    this.saving.set(true);
-    this.api.updateGroupChecklist(m.groupId, m.checklist.id, {
-      title: this.formClTitle().trim(),
-      description: this.formClDesc().trim() || undefined,
-      status: m.checklist.status,
-      items: m.checklist.items,
-    }).subscribe({
-      next: updated => {
-        this.groups.update(gs => gs.map(g => g.meta.id === m.groupId ? { ...g, lists: g.lists.map(cl => cl.id === updated.id ? updated : cl) } : g));
-        this.toast.show({ title: 'Checklist updated' });
-        this.saving.set(false);
-        this.closeModal();
-      },
-      error: e => { this.toast.show({ title: 'Failed', description: e.message, variant: 'destructive' }); this.saving.set(false); }
-    });
-  }
-
-  submitDeleteChecklist() {
-    const m = this.modal();
-    if (m.kind !== 'deleteChecklist') return;
-    this.saving.set(true);
-    this.api.deleteGroupChecklist(m.groupId, m.checklist.id).subscribe({
-      next: () => {
-        this.groups.update(gs => gs.map(g => g.meta.id === m.groupId ? { ...g, lists: g.lists.filter(cl => cl.id !== m.checklist.id) } : g));
-        this.toast.show({ title: 'Checklist deleted' });
-        this.saving.set(false);
-        this.closeModal();
-      },
-      error: e => { this.toast.show({ title: 'Failed', description: e.message, variant: 'destructive' }); this.saving.set(false); }
-    });
-  }
-
-  toggleCardItem(event: Event, groupId: number, cl: Checklist, itemId: string) {
+  openEdit(g: ChecklistGroup, event: Event) {
     event.stopPropagation();
-    const updatedItems = cl.items.map(i => i.id === itemId ? { ...i, checked: !i.checked } : i);
-    // Optimistic update
-    this.groups.update(gs => gs.map(g => g.meta.id === groupId
-      ? { ...g, lists: g.lists.map(c => c.id === cl.id ? { ...c, items: updatedItems } : c) }
-      : g
-    ));
-    this.api.updateGroupChecklist(groupId, cl.id, {
-      title: cl.title,
-      description: cl.description,
-      status: cl.status,
-      items: updatedItems,
-    }).subscribe({
+    this.formName.set(g.name);
+    this.formDesc.set(g.description ?? '');
+    this.showEditModal.set(g);
+    this.openMenuId.set(null);
+  }
+
+  submitEdit() {
+    const g = this.showEditModal();
+    if (!g) return;
+    if (!this.formName().trim()) { this.toast.show({ title: 'Name required', variant: 'destructive' }); return; }
+    this.saving.set(true);
+    this.api.updateChecklistGroup(g.id, { name: this.formName().trim(), description: this.formDesc().trim() || undefined }).subscribe({
       next: updated => {
-        this.groups.update(gs => gs.map(g => g.meta.id === groupId
-          ? { ...g, lists: g.lists.map(c => c.id === updated.id ? updated : c) }
-          : g
-        ));
+        this.groups.update(gs => gs.map(x => x.id === updated.id ? updated : x).sort((a, b) => a.name.localeCompare(b.name)));
+        this.toast.show({ title: 'Project updated' });
+        this.saving.set(false);
+        this.showEditModal.set(null);
       },
-      error: () => {
-        // Revert on failure
-        this.groups.update(gs => gs.map(g => g.meta.id === groupId
-          ? { ...g, lists: g.lists.map(c => c.id === cl.id ? cl : c) }
-          : g
-        ));
-        this.toast.show({ title: 'Failed to save', variant: 'destructive' });
-      }
+      error: e => { this.toast.show({ title: 'Failed', description: e.message, variant: 'destructive' }); this.saving.set(false); }
     });
   }
 
-  toggleCardMenu(key: string, event: Event) {
+  openDelete(g: ChecklistGroup, event: Event) {
+    event.stopPropagation();
+    this.showDeleteModal.set(g);
+    this.openMenuId.set(null);
+  }
+
+  submitDelete() {
+    const g = this.showDeleteModal();
+    if (!g) return;
+    this.saving.set(true);
+    this.api.deleteChecklistGroup(g.id).subscribe({
+      next: () => {
+        this.groups.update(gs => gs.filter(x => x.id !== g.id));
+        this.toast.show({ title: 'Project deleted' });
+        this.saving.set(false);
+        this.showDeleteModal.set(null);
+      },
+      error: e => { this.toast.show({ title: 'Failed', description: e.message, variant: 'destructive' }); this.saving.set(false); }
+    });
+  }
+
+  toggleMenu(id: number, event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    this.openCardMenuId.update(v => v === key ? null : key);
+    this.openMenuId.update(v => v === id ? null : id);
   }
 
   @HostListener('document:click')
-  closeCardMenus() { this.openCardMenuId.set(null); }
+  closeMenus() { this.openMenuId.set(null); }
 }

@@ -1,0 +1,185 @@
+<div style="display:flex;flex-direction:column;gap:1.5rem">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
+    <div style="display:flex;align-items:center;gap:0.75rem;min-width:0">
+      <a routerLink="/checklists" style="color:hsl(var(--muted-foreground));text-decoration:none;display:flex;flex-shrink:0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </a>
+      <div style="min-width:0">
+        <h1 style="font-size:1.5rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          {{ group()?.name ?? 'Project' }}
+        </h1>
+        @if (group()?.description) {
+          <p style="color:hsl(var(--muted-foreground));font-size:0.875rem;margin-top:0.125rem">{{ group()!.description }}</p>
+        }
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openNewChecklist()" style="flex-shrink:0">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Checklist
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
+      @for (i of [1,2,3]; track i) {
+        <div class="skeleton" style="height:9rem;border-radius:var(--radius)"></div>
+      }
+    </div>
+  } @else if (checklists().length === 0) {
+    <div style="text-align:center;padding:5rem 0;border:2px dashed hsl(var(--border));border-radius:var(--radius)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="1.5" style="margin:0 auto 0.75rem"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1" ry="1"/><path d="m9 14 2 2 4-4"/></svg>
+      <h3 style="font-size:1rem;font-weight:500;margin-bottom:0.25rem">No checklists yet</h3>
+      <p style="color:hsl(var(--muted-foreground));font-size:0.875rem;margin-bottom:1rem">Add the first checklist to this project.</p>
+      <button class="btn btn-primary" (click)="openNewChecklist()">Add Checklist</button>
+    </div>
+  } @else {
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
+      @for (cl of checklists(); track cl.id) {
+        <div style="position:relative">
+          <div class="card" style="cursor:default;transition:border-color 0.15s">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;margin-bottom:0.625rem">
+              <h3 style="font-size:0.9375rem;font-weight:600;line-height:1.3;padding-right:1.75rem">{{ cl.title }}</h3>
+              <span [class]="cl.status === 'archived' ? 'badge badge-skipped' : 'badge badge-passed'" style="white-space:nowrap;flex-shrink:0">{{ cl.status }}</span>
+            </div>
+            @if (cl.description) {
+              <p style="font-size:0.8125rem;color:hsl(var(--muted-foreground));margin-bottom:0.625rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ cl.description }}</p>
+            }
+            @if (cl.items.length > 0) {
+              <!-- Progress bar -->
+              <div style="margin-bottom:0.625rem">
+                <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:hsl(var(--muted-foreground));margin-bottom:0.25rem">
+                  <span>{{ checkedCount(cl) }} / {{ cl.items.length }} checked</span>
+                  <span style="font-weight:600;color:hsl(var(--foreground))">{{ progress(cl) }}%</span>
+                </div>
+                <div style="height:4px;background:hsl(var(--border));border-radius:9999px;overflow:hidden">
+                  <div style="height:100%;border-radius:9999px;transition:width 0.3s"
+                       [style.width]="progress(cl) + '%'"
+                       [style.background]="progress(cl) === 100 ? '#16a34a' : 'hsl(var(--primary))'"></div>
+                </div>
+              </div>
+              <!-- Checkbox item preview -->
+              <div style="display:flex;flex-direction:column;gap:0.3rem">
+                @for (item of cl.items.slice(0, 4); track item.id) {
+                  <div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"
+                       (click)="toggleCardItem($event, cl, item.id)">
+                    <button type="button"
+                      style="flex-shrink:0;width:14px;height:14px;border-radius:3px;border:1.5px solid;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;transition:all 0.15s"
+                      [style.borderColor]="item.checked ? '#16a34a' : 'hsl(var(--border))'"
+                      [style.background]="item.checked ? '#16a34a' : 'transparent'">
+                      @if (item.checked) {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      }
+                    </button>
+                    <span style="font-size:0.8rem;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;transition:all 0.15s"
+                          [style.textDecoration]="item.checked ? 'line-through' : 'none'"
+                          [style.color]="item.checked ? 'hsl(var(--muted-foreground))' : 'inherit'">{{ item.title }}</span>
+                  </div>
+                }
+                @if (cl.items.length > 4) {
+                  <div style="font-size:0.75rem;color:hsl(var(--muted-foreground));padding-left:1.375rem">+{{ cl.items.length - 4 }} more</div>
+                }
+              </div>
+            } @else {
+              <div style="font-size:0.8125rem;color:hsl(var(--muted-foreground))">No items yet</div>
+            }
+          </div>
+
+          <!-- ⋮ menu -->
+          <div style="position:absolute;top:0.625rem;right:0.625rem">
+            <button class="btn btn-ghost btn-sm btn-icon" style="width:24px;height:24px;padding:0" (click)="toggleCardMenu(cl.id, $event)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+            </button>
+            @if (openCardMenuId() === cl.id) {
+              <div style="position:absolute;top:100%;right:0;margin-top:0.25rem;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,0.12);min-width:130px;z-index:50;overflow:hidden">
+                <button class="dropdown-item" (click)="openEditChecklist(cl, $event)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+                <div style="height:1px;background:hsl(var(--border));margin:0.25rem 0"></div>
+                <button class="dropdown-item danger" (click)="openDeleteChecklist(cl, $event)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                  Delete
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Add Checklist modal -->
+@if (modal().kind === 'newChecklist') {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()" style="max-width:36rem">
+      <div class="modal-title">Add Checklist</div>
+      <div style="display:flex;flex-direction:column;gap:0.875rem">
+        <div><label class="label">Title *</label><input class="input" [ngModel]="formClTitle()" (ngModelChange)="formClTitle.set($event)" placeholder="e.g. Release smoke test" /></div>
+        <div><label class="label">Description</label><textarea class="input" rows="2" [ngModel]="formClDesc()" (ngModelChange)="formClDesc.set($event)" placeholder="What does this checklist verify?"></textarea></div>
+        <div>
+          <label class="label">Items</label>
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);overflow:hidden">
+            @for (item of formClItems(); track item.id) {
+              <div style="display:flex;align-items:center;gap:0.625rem;padding:0.5rem 0.75rem;border-bottom:1px solid hsl(var(--border)/0.6)">
+                <div style="flex-shrink:0;width:18px;height:18px;border-radius:3px;border:2px solid hsl(var(--border));background:transparent"></div>
+                <span style="flex:1;font-size:0.875rem">{{ item.title }}</span>
+                <button type="button" style="background:none;border:none;cursor:pointer;padding:0 2px;color:hsl(var(--muted-foreground));display:flex;align-items:center" (click)="removeDraftItem(item.id)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            }
+            <div style="display:flex;align-items:center;gap:0.625rem;padding:0.5rem 0.75rem">
+              <div style="flex-shrink:0;width:18px;height:18px;border-radius:3px;border:2px solid;transition:border-color 0.15s"
+                   [style.borderColor]="formClItemFocused() ? 'hsl(var(--primary))' : 'hsl(var(--border))'"></div>
+              <input #clItemInput [value]="formClItemDraft()" (input)="formClItemDraft.set($any($event.target).value)"
+                (keydown)="onItemInputKeydown($event)" (focus)="formClItemFocused.set(true)" (blur)="formClItemFocused.set(false)"
+                placeholder="Add an item…"
+                style="flex:1;border:none;outline:none;background:transparent;font-size:0.875rem;padding:0;font-family:inherit;color:inherit" />
+              @if (formClItemFocused() && formClItemDraft().trim()) {
+                <span style="font-size:0.7rem;color:hsl(var(--muted-foreground));white-space:nowrap">Enter ↵</span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="submitNewChecklist()" [disabled]="saving()">{{ saving() ? 'Creating…' : 'Create' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Edit Checklist modal -->
+@if (modal().kind === 'editChecklist') {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-title">Edit Checklist</div>
+      <div style="display:flex;flex-direction:column;gap:0.875rem">
+        <div><label class="label">Title *</label><input class="input" [ngModel]="formClTitle()" (ngModelChange)="formClTitle.set($event)" /></div>
+        <div><label class="label">Description</label><textarea class="input" rows="2" [ngModel]="formClDesc()" (ngModelChange)="formClDesc.set($event)"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="submitEditChecklist()" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Delete Checklist modal -->
+@if (modal().kind === 'deleteChecklist') {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()" style="max-width:28rem">
+      <div class="modal-title">Delete Checklist</div>
+      <div class="modal-desc">Delete "<strong>{{ $any(modal()).checklist.title }}</strong>"? All items and progress will be permanently lost.</div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-destructive" (click)="submitDeleteChecklist()" [disabled]="saving()">{{ saving() ? 'Deleting…' : 'Delete' }}</button>
+      </div>
+    </div>
+  </div>
+}
