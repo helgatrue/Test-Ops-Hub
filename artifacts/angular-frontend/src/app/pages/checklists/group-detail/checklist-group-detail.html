@@ -151,9 +151,9 @@
           <label class="label">Items</label>
           <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);overflow:hidden">
             @for (item of formClItems(); track item.id) {
-              <div style="display:flex;align-items:center;gap:0.625rem;padding:0.5rem 0.75rem;border-bottom:1px solid hsl(var(--border)/0.6)">
-                <div style="flex-shrink:0;width:18px;height:18px;border-radius:3px;border:2px solid hsl(var(--border));background:transparent"></div>
-                <span style="flex:1;font-size:0.875rem">{{ item.title }}</span>
+              <div style="display:flex;align-items:flex-start;gap:0.625rem;padding:0.5rem 0.75rem;border-bottom:1px solid hsl(var(--border)/0.6)">
+                <div style="flex-shrink:0;margin-top:0.175rem;width:18px;height:18px;border-radius:3px;border:2px solid hsl(var(--border));background:transparent"></div>
+                <span style="flex:1;min-width:0;font-size:0.875rem;word-break:break-word;overflow-wrap:break-word">{{ item.title }}</span>
                 <button type="button" style="background:none;border:none;cursor:pointer;padding:0 2px;color:hsl(var(--muted-foreground));display:flex;align-items:center" (click)="removeDraftItem(item.id)">
                   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
