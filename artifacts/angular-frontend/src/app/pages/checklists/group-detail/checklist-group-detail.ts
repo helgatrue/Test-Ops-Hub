@@ -23,6 +23,8 @@ export class ChecklistGroupDetail implements OnInit {
   loading = signal(true);
   saving = signal(false);
   openCardMenuId = signal<number | null>(null);
+  menuPos = signal<{ top: number; right: number } | null>(null);
+  menuChecklist = signal<Checklist | null>(null);
   modal = signal<Modal>({ kind: 'none' });
 
   // per-card inline add
@@ -214,9 +216,20 @@ export class ChecklistGroupDetail implements OnInit {
   toggleCardMenu(id: number, event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    this.openCardMenuId.update(v => v === id ? null : id);
+    if (this.openCardMenuId() === id) {
+      this.openCardMenuId.set(null);
+      this.menuPos.set(null);
+      this.menuChecklist.set(null);
+    } else {
+      const btn = (event.currentTarget as HTMLElement);
+      const rect = btn.getBoundingClientRect();
+      this.menuPos.set({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+      this.openCardMenuId.set(id);
+      const cl = this.checklists().find(c => c.id === id) ?? null;
+      this.menuChecklist.set(cl);
+    }
   }
 
   @HostListener('document:click')
-  closeCardMenus() { this.openCardMenuId.set(null); }
+  closeCardMenus() { this.openCardMenuId.set(null); this.menuPos.set(null); this.menuChecklist.set(null); }
 }
