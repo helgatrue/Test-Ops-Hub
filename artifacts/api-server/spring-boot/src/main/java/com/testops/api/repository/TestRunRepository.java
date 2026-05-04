@@ -15,7 +15,7 @@ public interface TestRunRepository extends JpaRepository<TestRun, Long> {
     List<TestRun> findByProjectIdOrderByCreatedAtAsc(Long projectId);
 
     @Query("SELECT r FROM TestRun r WHERE r.projectId = :projectId " +
-           "AND (:status IS NULL OR r.status = :status) ORDER BY r.createdAt ASC")
+           "AND (cast(:status as string) IS NULL OR r.status = cast(:status as string)) ORDER BY r.createdAt ASC")
     List<TestRun> findFiltered(@Param("projectId") Long projectId,
                                @Param("status") String status);
 

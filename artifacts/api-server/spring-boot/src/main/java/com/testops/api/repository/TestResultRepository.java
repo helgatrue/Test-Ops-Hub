@@ -14,7 +14,7 @@ public interface TestResultRepository extends JpaRepository<TestResult, Long> {
     List<TestResult> findByTestRunId(Long testRunId);
 
     @Query("SELECT r FROM TestResult r WHERE r.testRunId = :runId " +
-           "AND (:status IS NULL OR r.status = :status)")
+           "AND (cast(:status as string) IS NULL OR r.status = cast(:status as string))")
     List<TestResult> findFiltered(@Param("runId") Long runId, @Param("status") String status);
 
     long countByTestRunId(Long testRunId);

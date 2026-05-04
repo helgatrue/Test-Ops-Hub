@@ -15,9 +15,9 @@ public interface TestCaseRepository extends JpaRepository<TestCase, Long> {
     List<TestCase> findByProjectIdOrderByCreatedAtAsc(Long projectId);
 
     @Query("SELECT tc FROM TestCase tc WHERE tc.projectId = :projectId " +
-           "AND (:status IS NULL OR tc.status = :status) " +
-           "AND (:priority IS NULL OR tc.priority = :priority) " +
-           "AND (:search IS NULL OR LOWER(tc.title) LIKE LOWER(CONCAT('%', :search, '%')))" +
+           "AND (cast(:status as string) IS NULL OR tc.status = cast(:status as string)) " +
+           "AND (cast(:priority as string) IS NULL OR tc.priority = cast(:priority as string)) " +
+           "AND (cast(:search as string) IS NULL OR LOWER(tc.title) LIKE LOWER(CONCAT('%', cast(:search as string), '%')))" +
            " ORDER BY tc.createdAt ASC")
     List<TestCase> findFiltered(@Param("projectId") Long projectId,
                                 @Param("status") String status,
