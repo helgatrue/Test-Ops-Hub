@@ -44,7 +44,7 @@
           <div class="sidebar-sub">
             <a routerLink="/checklists" class="sidebar-sub-item" [class.active]="isActive('/checklists')">All Projects</a>
             @for (group of checklistGroups(); track group.id) {
-              <a [routerLink]="['/checklists', group.id]" class="sidebar-sub-item" [class.active]="isActive('/checklists/' + group.id)" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block">
+              <a [routerLink]="['/checklists', group.id]" class="sidebar-sub-item" [class.active]="isActive('/checklists/' + group.id)" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
                 {{ group.name }}
               </a>
             }
