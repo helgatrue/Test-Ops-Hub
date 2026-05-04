@@ -39,7 +39,7 @@
   } @else {
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
       @for (cl of checklists(); track cl.id) {
-        <div style="position:relative">
+        <div style="position:relative" [style.zIndex]="openCardMenuId() === cl.id ? 100 : 'auto'">
           <div class="card" style="cursor:pointer;transition:border-color 0.15s" (click)="navigateToChecklist(cl.id)"
                onmouseenter="this.style.borderColor='hsl(var(--primary))'" onmouseleave="this.style.borderColor=''">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;margin-bottom:0.625rem">
