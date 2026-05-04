@@ -25,6 +25,10 @@ export class ChecklistGroupDetail implements OnInit {
   openCardMenuId = signal<number | null>(null);
   modal = signal<Modal>({ kind: 'none' });
 
+  // per-card inline add
+  cardDraft = signal<Record<number, string>>({});
+  cardFocused = signal<Record<number, boolean>>({});
+
   formClTitle = signal('');
   formClDesc = signal('');
   formClItems = signal<ChecklistItem[]>([]);
@@ -160,6 +164,32 @@ export class ChecklistGroupDetail implements OnInit {
       },
       error: e => { this.toast.show({ title: 'Failed', description: e.message, variant: 'destructive' }); this.saving.set(false); }
     });
+  }
+
+  getCardDraft(id: number) { return this.cardDraft()[id] ?? ''; }
+  setCardDraft(id: number, val: string) { this.cardDraft.update(m => ({ ...m, [id]: val })); }
+  setCardFocused(id: number, val: boolean) { this.cardFocused.update(m => ({ ...m, [id]: val })); }
+
+  addCardItem(cl: Checklist) {
+    const text = this.getCardDraft(cl.id).trim();
+    if (!text) return;
+    const newItem: ChecklistItem = { id: Date.now().toString(), title: text, checked: false, order: cl.items.length + 1 };
+    const updatedItems = [...cl.items, newItem];
+    this.checklists.update(lists => lists.map(c => c.id === cl.id ? { ...c, items: updatedItems } : c));
+    this.setCardDraft(cl.id, '');
+    this.api.updateGroupChecklist(this.groupId, cl.id, {
+      title: cl.title, description: cl.description, status: cl.status, items: updatedItems,
+    }).subscribe({
+      next: updated => { this.checklists.update(lists => lists.map(c => c.id === updated.id ? updated : c)); },
+      error: () => {
+        this.checklists.update(lists => lists.map(c => c.id === cl.id ? cl : c));
+        this.toast.show({ title: 'Failed to save', variant: 'destructive' });
+      }
+    });
+  }
+
+  onCardKeydown(event: KeyboardEvent, cl: Checklist) {
+    if (event.key === 'Enter') { event.preventDefault(); this.addCardItem(cl); }
   }
 
   toggleCardItem(event: Event, cl: Checklist, itemId: string) {
