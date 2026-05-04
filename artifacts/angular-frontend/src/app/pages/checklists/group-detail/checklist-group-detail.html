@@ -61,7 +61,7 @@
               </div>
               <!-- Checkbox item preview -->
               <div style="display:flex;flex-direction:column;gap:0.3rem">
-                @for (item of cl.items.slice(0, 4); track item.id) {
+                @for (item of cl.items; track item.id) {
                   <div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"
                        (click)="toggleCardItem($event, cl, item.id)">
                     <button type="button"
@@ -76,9 +76,6 @@
                           [style.textDecoration]="item.checked ? 'line-through' : 'none'"
                           [style.color]="item.checked ? 'hsl(var(--muted-foreground))' : 'inherit'">{{ item.title }}</span>
                   </div>
-                }
-                @if (cl.items.length > 4) {
-                  <div style="font-size:0.75rem;color:hsl(var(--muted-foreground));padding-left:1.375rem">+{{ cl.items.length - 4 }} more</div>
                 }
               </div>
             } @else {
