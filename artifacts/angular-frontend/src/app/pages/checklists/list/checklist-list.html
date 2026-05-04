@@ -15,6 +15,10 @@
           }
         </select>
       }
+      <button class="btn btn-primary" (click)="openCreateProject()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+        New Project
+      </button>
     </div>
   </div>
 
@@ -26,19 +30,19 @@
       }
     </div>
 
-  <!-- Empty: no checklists at all -->
+  <!-- Empty: no checklists anywhere -->
   } @else if (totalCount === 0) {
     <div style="text-align:center;padding:6rem 0;border:2px dashed hsl(var(--border));border-radius:var(--radius)">
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 1rem"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1" ry="1"/><path d="m9 14 2 2 4-4"/></svg>
       <h3 style="font-size:1.125rem;font-weight:500;margin-bottom:0.25rem">No checklists yet</h3>
-      <p style="color:hsl(var(--muted-foreground));font-size:0.875rem;margin-bottom:1.25rem">Open a project and create a checklist to start tracking manual verifications.</p>
-      <a routerLink="/projects" class="btn btn-primary">Go to Projects</a>
+      <p style="color:hsl(var(--muted-foreground));font-size:0.875rem;margin-bottom:1.25rem">Create a project, then add checklists to start tracking manual verifications.</p>
+      <button class="btn btn-primary" (click)="openCreateProject()">Create your first project</button>
     </div>
 
   } @else {
     @for (group of filteredGroups; track group.project.id) {
       <div>
-        <!-- Project group label -->
+        <!-- Project group header -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.875rem;padding-bottom:0.625rem;border-bottom:1px solid hsl(var(--border))">
           <div style="display:flex;align-items:center;gap:0.5rem">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" style="flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -51,7 +55,7 @@
           </button>
         </div>
 
-        <!-- Cards -->
+        <!-- Checklist cards -->
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
           @for (cl of group.lists; track cl.id) {
             <div style="position:relative">
@@ -92,10 +96,6 @@
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                       Edit
                     </button>
-                    <button class="dropdown-item" (click)="openDuplicateChecklist(group.project.id, cl)">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                      Duplicate
-                    </button>
                     <div style="height:1px;background:hsl(var(--border));margin:0.25rem 0"></div>
                     <button class="dropdown-item danger" (click)="openDeleteChecklist(group.project.id, cl)">
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
@@ -116,11 +116,32 @@
   }
 </div>
 
+<!-- ── Modals ─────────────────────────────────────────────────────────────── -->
+
+<!-- Create Project -->
+@if (modal().kind === 'createProject') {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-title">New Project</div>
+      <div class="modal-desc">Create a new project to organise your checklists.</div>
+      <div style="display:flex;flex-direction:column;gap:0.875rem">
+        <div><label class="label">Name *</label><input class="input" [ngModel]="formProjectName()" (ngModelChange)="formProjectName.set($event)" placeholder="e.g. Frontend Web App" /></div>
+        <div><label class="label">Description</label><textarea class="input" rows="2" [ngModel]="formProjectDesc()" (ngModelChange)="formProjectDesc.set($event)" placeholder="What does this project cover?"></textarea></div>
+        <div><label class="label">Repo URL</label><input class="input" [ngModel]="formProjectRepo()" (ngModelChange)="formProjectRepo.set($event)" placeholder="https://github.com/..." /></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="submitCreateProject()" [disabled]="saving()">{{ saving() ? 'Creating…' : 'Create' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
 <!-- New Checklist -->
 @if (modal().kind === 'newChecklist') {
   <div class="modal-backdrop" (click)="closeModal()">
     <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-title">New Checklist</div>
+      <div class="modal-title">Add Checklist</div>
       <div class="modal-desc">Add a checklist to this project. You can add items after creating it.</div>
       <div style="display:flex;flex-direction:column;gap:0.875rem">
         <div><label class="label">Title *</label><input class="input" [ngModel]="formClTitle()" (ngModelChange)="formClTitle.set($event)" placeholder="e.g. Release smoke test" /></div>
@@ -157,24 +178,10 @@
   <div class="modal-backdrop" (click)="closeModal()">
     <div class="modal" (click)="$event.stopPropagation()" style="max-width:28rem">
       <div class="modal-title">Delete Checklist</div>
-      <div class="modal-desc">Delete "<strong>{{ $any(modal()).checklist.title }}</strong>"? All items and progress will be lost permanently.</div>
+      <div class="modal-desc">Delete "<strong>{{ $any(modal()).checklist.title }}</strong>"? All items and progress will be permanently lost.</div>
       <div class="modal-footer">
         <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
         <button class="btn btn-destructive" (click)="submitDeleteChecklist()" [disabled]="saving()">{{ saving() ? 'Deleting…' : 'Delete' }}</button>
-      </div>
-    </div>
-  </div>
-}
-
-<!-- Duplicate Checklist -->
-@if (modal().kind === 'duplicateChecklist') {
-  <div class="modal-backdrop" (click)="closeModal()">
-    <div class="modal" (click)="$event.stopPropagation()" style="max-width:28rem">
-      <div class="modal-title">Duplicate Checklist</div>
-      <div class="modal-desc">A copy of "<strong>{{ $any(modal()).checklist.title }}</strong>" will be created with all items unchecked.</div>
-      <div class="modal-footer">
-        <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
-        <button class="btn btn-primary" (click)="submitDuplicateChecklist()" [disabled]="saving()">{{ saving() ? 'Duplicating…' : 'Duplicate' }}</button>
       </div>
     </div>
   </div>

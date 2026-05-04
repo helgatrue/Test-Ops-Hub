@@ -9,10 +9,10 @@ interface Group { project: Project; lists: Checklist[]; }
 
 type Modal =
   | { kind: 'none' }
-  | { kind: 'editChecklist'; projectId: number; checklist: Checklist }
-  | { kind: 'deleteChecklist'; projectId: number; checklist: Checklist }
+  | { kind: 'createProject' }
   | { kind: 'newChecklist'; projectId: number }
-  | { kind: 'duplicateChecklist'; projectId: number; checklist: Checklist };
+  | { kind: 'editChecklist'; projectId: number; checklist: Checklist }
+  | { kind: 'deleteChecklist'; projectId: number; checklist: Checklist };
 
 @Component({
   selector: 'app-checklist-list',
@@ -26,6 +26,10 @@ export class ChecklistList implements OnInit {
   filterProjectId = signal<number | null>(null);
   openCardMenuId = signal<string | null>(null);
   modal = signal<Modal>({ kind: 'none' });
+
+  formProjectName = signal('');
+  formProjectDesc = signal('');
+  formProjectRepo = signal('');
 
   formClTitle = signal('');
   formClDesc = signal('');
@@ -41,12 +45,6 @@ export class ChecklistList implements OnInit {
         if (projects.length === 0) { this.groups.set([]); this.loading.set(false); return; }
         let done = 0;
         const result: Group[] = [];
-        projects.forEach(p => {
-          this.api.getChecklists(p.id).subscribe({
-            next: lists => { result.push({ project: p, lists }); finalize(); },
-            error: () => { result.push({ project: p, lists: [] }); finalize(); }
-          });
-        });
         const finalize = () => {
           done++;
           if (done === projects.length) {
@@ -55,6 +53,12 @@ export class ChecklistList implements OnInit {
             this.loading.set(false);
           }
         };
+        projects.forEach(p => {
+          this.api.getChecklists(p.id).subscribe({
+            next: lists => { result.push({ project: p, lists }); finalize(); },
+            error: () => { result.push({ project: p, lists: [] }); finalize(); }
+          });
+        });
       },
       error: () => this.loading.set(false)
     });
@@ -86,6 +90,35 @@ export class ChecklistList implements OnInit {
 
   closeModal() { this.modal.set({ kind: 'none' }); }
 
+  // ── Project ──────────────────────────────────────────────────────────────
+  openCreateProject() {
+    this.formProjectName.set('');
+    this.formProjectDesc.set('');
+    this.formProjectRepo.set('');
+    this.modal.set({ kind: 'createProject' });
+  }
+
+  submitCreateProject() {
+    if (!this.formProjectName().trim()) { this.toast.show({ title: 'Name required', variant: 'destructive' }); return; }
+    this.saving.set(true);
+    this.api.createProject({
+      name: this.formProjectName().trim(),
+      description: this.formProjectDesc().trim() || undefined,
+      repoUrl: this.formProjectRepo().trim() || undefined,
+    }).subscribe({
+      next: p => {
+        this.groups.update(gs =>
+          [...gs, { project: p, lists: [] }].sort((a, b) => a.project.name.localeCompare(b.project.name))
+        );
+        this.toast.show({ title: 'Project created' });
+        this.saving.set(false);
+        this.closeModal();
+      },
+      error: e => { this.toast.show({ title: 'Failed', description: e.message, variant: 'destructive' }); this.saving.set(false); }
+    });
+  }
+
+  // ── Checklists ───────────────────────────────────────────────────────────
   openNewChecklist(projectId: number) {
     this.formClTitle.set('');
     this.formClDesc.set('');
@@ -104,17 +137,16 @@ export class ChecklistList implements OnInit {
     this.openCardMenuId.set(null);
   }
 
-  openDuplicateChecklist(projectId: number, cl: Checklist) {
-    this.modal.set({ kind: 'duplicateChecklist', projectId, checklist: cl });
-    this.openCardMenuId.set(null);
-  }
-
   submitNewChecklist() {
     const m = this.modal();
     if (m.kind !== 'newChecklist') return;
     if (!this.formClTitle().trim()) { this.toast.show({ title: 'Title required', variant: 'destructive' }); return; }
     this.saving.set(true);
-    this.api.createChecklist(m.projectId, { title: this.formClTitle().trim(), description: this.formClDesc().trim() || undefined, items: [] }).subscribe({
+    this.api.createChecklist(m.projectId, {
+      title: this.formClTitle().trim(),
+      description: this.formClDesc().trim() || undefined,
+      items: [],
+    }).subscribe({
       next: cl => {
         this.groups.update(gs => gs.map(g => g.project.id === m.projectId ? { ...g, lists: [...g.lists, cl] } : g));
         this.toast.show({ title: 'Checklist created' });
@@ -137,7 +169,11 @@ export class ChecklistList implements OnInit {
       items: m.checklist.items,
     }).subscribe({
       next: updated => {
-        this.groups.update(gs => gs.map(g => g.project.id === m.projectId ? { ...g, lists: g.lists.map(cl => cl.id === updated.id ? updated : cl) } : g));
+        this.groups.update(gs =>
+          gs.map(g => g.project.id === m.projectId
+            ? { ...g, lists: g.lists.map(cl => cl.id === updated.id ? updated : cl) }
+            : g)
+        );
         this.toast.show({ title: 'Checklist updated' });
         this.saving.set(false);
         this.closeModal();
@@ -152,27 +188,12 @@ export class ChecklistList implements OnInit {
     this.saving.set(true);
     this.api.deleteChecklist(m.projectId, m.checklist.id).subscribe({
       next: () => {
-        this.groups.update(gs => gs.map(g => g.project.id === m.projectId ? { ...g, lists: g.lists.filter(cl => cl.id !== m.checklist.id) } : g));
+        this.groups.update(gs =>
+          gs.map(g => g.project.id === m.projectId
+            ? { ...g, lists: g.lists.filter(cl => cl.id !== m.checklist.id) }
+            : g)
+        );
         this.toast.show({ title: 'Checklist deleted' });
-        this.saving.set(false);
-        this.closeModal();
-      },
-      error: e => { this.toast.show({ title: 'Failed', description: e.message, variant: 'destructive' }); this.saving.set(false); }
-    });
-  }
-
-  submitDuplicateChecklist() {
-    const m = this.modal();
-    if (m.kind !== 'duplicateChecklist') return;
-    this.saving.set(true);
-    this.api.createChecklist(m.projectId, {
-      title: m.checklist.title + ' (copy)',
-      description: m.checklist.description,
-      items: m.checklist.items.map(i => ({ ...i, id: Date.now().toString() + Math.random(), checked: false })),
-    }).subscribe({
-      next: cl => {
-        this.groups.update(gs => gs.map(g => g.project.id === m.projectId ? { ...g, lists: [...g.lists, cl] } : g));
-        this.toast.show({ title: 'Checklist duplicated' });
         this.saving.set(false);
         this.closeModal();
       },
