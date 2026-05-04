@@ -53,6 +53,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": true
+          },
           "configurations": {
             "production": {
               "buildTarget": "angular-frontend:build:production"
