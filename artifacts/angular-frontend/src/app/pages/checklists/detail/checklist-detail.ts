@@ -12,7 +12,9 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class ChecklistDetail implements OnInit {
   projectId = 0;
+  groupId = 0;
   checklistId = 0;
+  fromGroup = false;
   checklist = signal<Checklist | null>(null);
   loading = signal(true);
   saving = signal(false);
@@ -33,8 +35,17 @@ export class ChecklistDetail implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.projectId = parseInt(this.route.snapshot.paramMap.get('projectId') ?? '0');
-    this.checklistId = parseInt(this.route.snapshot.paramMap.get('checklistId') ?? '0');
+    const params = this.route.snapshot.paramMap;
+    const gid = params.get('groupId');
+    const pid = params.get('projectId');
+    if (gid) {
+      this.groupId = parseInt(gid);
+      this.projectId = this.groupId;
+      this.fromGroup = true;
+    } else {
+      this.projectId = parseInt(pid ?? '0');
+    }
+    this.checklistId = parseInt(params.get('checklistId') ?? '0');
     this.load();
   }
 

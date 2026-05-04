@@ -40,7 +40,8 @@
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
       @for (cl of checklists(); track cl.id) {
         <div style="position:relative">
-          <div class="card" style="cursor:default;transition:border-color 0.15s">
+          <div class="card" style="cursor:pointer;transition:border-color 0.15s" (click)="navigateToChecklist(cl.id)"
+               onmouseenter="this.style.borderColor='hsl(var(--primary))'" onmouseleave="this.style.borderColor=''">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;margin-bottom:0.625rem">
               <h3 style="font-size:0.9375rem;font-weight:600;line-height:1.3;padding-right:1.75rem">{{ cl.title }}</h3>
               <span [class]="cl.status === 'archived' ? 'badge badge-skipped' : 'badge badge-passed'" style="white-space:nowrap;flex-shrink:0">{{ cl.status }}</span>
@@ -80,7 +81,7 @@
                   </div>
                 }
                 <!-- Inline add row -->
-                <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.2rem">
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.2rem" (click)="$event.stopPropagation()">
                   <div style="flex-shrink:0;width:14px;height:14px;border-radius:3px;border:1.5px solid;transition:border-color 0.15s"
                        [style.borderColor]="cardFocused()[cl.id] ? 'hsl(var(--primary))' : 'hsl(var(--border))'"></div>
                   <input
@@ -97,7 +98,7 @@
             } @else {
               <!-- No items yet — still show the add row -->
               <div style="display:flex;flex-direction:column;gap:0.3rem">
-                <div style="display:flex;align-items:center;gap:0.5rem">
+                <div style="display:flex;align-items:center;gap:0.5rem" (click)="$event.stopPropagation()">
                   <div style="flex-shrink:0;width:14px;height:14px;border-radius:3px;border:1.5px solid;transition:border-color 0.15s"
                        [style.borderColor]="cardFocused()[cl.id] ? 'hsl(var(--primary))' : 'hsl(var(--border))'"></div>
                   <input

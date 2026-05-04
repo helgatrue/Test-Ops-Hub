@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Checklist, ChecklistGroup, ChecklistItem } from '../../../services/api.service';
 import { ToastService } from '../../../services/toast.service';
@@ -37,7 +37,7 @@ export class ChecklistGroupDetail implements OnInit {
 
   @ViewChild('clItemInput') clItemInput?: ElementRef<HTMLInputElement>;
 
-  constructor(private api: ApiService, private toast: ToastService, private route: ActivatedRoute) {}
+  constructor(private api: ApiService, private toast: ToastService, private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit() {
     this.groupId = parseInt(this.route.snapshot.paramMap.get('groupId') ?? '0');
@@ -164,6 +164,10 @@ export class ChecklistGroupDetail implements OnInit {
       },
       error: e => { this.toast.show({ title: 'Failed', description: e.message, variant: 'destructive' }); this.saving.set(false); }
     });
+  }
+
+  navigateToChecklist(checklistId: number) {
+    this.router.navigate(['/checklists', this.groupId, checklistId]);
   }
 
   getCardDraft(id: number) { return this.cardDraft()[id] ?? ''; }

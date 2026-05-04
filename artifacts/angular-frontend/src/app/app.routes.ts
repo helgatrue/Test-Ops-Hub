@@ -16,6 +16,7 @@ export const routes: Routes = [
       { path: 'projects/:projectId/test-runs/:testRunId', loadComponent: () => import('./pages/test-runs/detail/test-run-detail').then(m => m.TestRunDetail) },
       { path: 'checklists', loadComponent: () => import('./pages/checklists/list/checklist-list').then(m => m.ChecklistList) },
       { path: 'checklists/:groupId', loadComponent: () => import('./pages/checklists/group-detail/checklist-group-detail').then(m => m.ChecklistGroupDetail) },
+      { path: 'checklists/:groupId/:checklistId', loadComponent: () => import('./pages/checklists/detail/checklist-detail').then(m => m.ChecklistDetail) },
       { path: 'projects/:projectId/checklists/new', loadComponent: () => import('./pages/checklists/new/checklist-new').then(m => m.ChecklistNew) },
       { path: 'projects/:projectId/checklists/:checklistId', loadComponent: () => import('./pages/checklists/detail/checklist-detail').then(m => m.ChecklistDetail) },
       { path: 'settings', loadComponent: () => import('./pages/settings/settings').then(m => m.Settings) },
