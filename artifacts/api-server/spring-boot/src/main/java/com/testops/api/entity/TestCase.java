@@ -1,9 +1,9 @@
 package com.testops.api.entity;
 
-import com.testops.api.converter.StepListConverter;
-import com.testops.api.converter.StringListConverter;
 import com.testops.api.dto.Step;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,11 +30,11 @@ public class TestCase {
     @Column(nullable = false)
     private String status = "draft";
 
-    @Convert(converter = StringListConverter.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private List<String> labels = new ArrayList<>();
 
-    @Convert(converter = StepListConverter.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private List<Step> steps = new ArrayList<>();
 

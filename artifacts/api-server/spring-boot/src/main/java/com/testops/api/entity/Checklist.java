@@ -1,8 +1,9 @@
 package com.testops.api.entity;
 
-import com.testops.api.converter.ChecklistItemListConverter;
 import com.testops.api.dto.ChecklistItem;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ public class Checklist {
     @Column(nullable = false)
     private String status = "active";
 
-    @Convert(converter = ChecklistItemListConverter.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private List<ChecklistItem> items = new ArrayList<>();
 
