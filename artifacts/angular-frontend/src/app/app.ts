@@ -21,7 +21,7 @@ import { CommonModule } from '@angular/common';
     </div>
     @if (globalMenu.state() !== null) {
       <div style="position:fixed;inset:0;z-index:9999" (click)="globalMenu.close()">
-        <div style="position:fixed;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:130px;overflow:hidden"
+        <div style="position:fixed;background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:130px;overflow:hidden"
              [style.top.px]="globalMenu.state()!.top"
              [style.right.px]="globalMenu.state()!.right"
              (click)="$event.stopPropagation()">
