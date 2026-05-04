@@ -1,8 +1,8 @@
-import { Component, OnInit, signal, HostListener } from '@angular/core';
+import { Component, OnInit, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Checklist, ChecklistGroup } from '../../../services/api.service';
+import { ApiService, Checklist, ChecklistGroup, ChecklistItem } from '../../../services/api.service';
 import { ToastService } from '../../../services/toast.service';
 
 interface Group { meta: ChecklistGroup; lists: Checklist[]; }
@@ -30,6 +30,11 @@ export class ChecklistList implements OnInit {
   formGroupDesc = signal('');
   formClTitle = signal('');
   formClDesc = signal('');
+  formClItems = signal<ChecklistItem[]>([]);
+  formClItemDraft = signal('');
+  formClItemFocused = signal(false);
+
+  @ViewChild('clItemInput') clItemInput?: ElementRef<HTMLInputElement>;
 
   constructor(private api: ApiService, private toast: ToastService) {}
 
@@ -100,7 +105,39 @@ export class ChecklistList implements OnInit {
   openNewChecklist(groupId: number) {
     this.formClTitle.set('');
     this.formClDesc.set('');
+    this.formClItems.set([]);
+    this.formClItemDraft.set('');
     this.modal.set({ kind: 'newChecklist', groupId });
+  }
+
+  addDraftItem() {
+    const text = this.formClItemDraft().trim();
+    if (!text) return;
+    const newItem: ChecklistItem = {
+      id: Date.now().toString(),
+      title: text,
+      checked: false,
+      order: this.formClItems().length + 1,
+    };
+    this.formClItems.update(items => [...items, newItem]);
+    this.formClItemDraft.set('');
+    if (this.clItemInput?.nativeElement) {
+      this.clItemInput.nativeElement.value = '';
+      this.clItemInput.nativeElement.focus();
+    }
+  }
+
+  removeDraftItem(id: string) {
+    this.formClItems.update(items =>
+      items.filter(i => i.id !== id).map((item, idx) => ({ ...item, order: idx + 1 }))
+    );
+  }
+
+  onItemInputKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.addDraftItem();
+    }
   }
 
   openEditChecklist(groupId: number, cl: Checklist) {
@@ -119,8 +156,17 @@ export class ChecklistList implements OnInit {
     const m = this.modal();
     if (m.kind !== 'newChecklist') return;
     if (!this.formClTitle().trim()) { this.toast.show({ title: 'Title required', variant: 'destructive' }); return; }
+    // commit any in-progress draft item
+    const draftText = this.formClItemDraft().trim();
+    const finalItems = draftText
+      ? [...this.formClItems(), { id: Date.now().toString(), title: draftText, checked: false, order: this.formClItems().length + 1 }]
+      : this.formClItems();
     this.saving.set(true);
-    this.api.createGroupChecklist(m.groupId, { title: this.formClTitle().trim(), description: this.formClDesc().trim() || undefined, items: [] }).subscribe({
+    this.api.createGroupChecklist(m.groupId, {
+      title: this.formClTitle().trim(),
+      description: this.formClDesc().trim() || undefined,
+      items: finalItems,
+    }).subscribe({
       next: cl => {
         this.groups.update(gs => gs.map(g => g.meta.id === m.groupId ? { ...g, lists: [...g.lists, cl] } : g));
         this.toast.show({ title: 'Checklist created' });

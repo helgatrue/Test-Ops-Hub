@@ -130,13 +130,58 @@
 <!-- Add Checklist -->
 @if (modal().kind === 'newChecklist') {
   <div class="modal-backdrop" (click)="closeModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal" (click)="$event.stopPropagation()" style="max-width:36rem">
       <div class="modal-title">Add Checklist</div>
-      <div class="modal-desc">Add a checklist to this project. Items can be added after creating it.</div>
       <div style="display:flex;flex-direction:column;gap:0.875rem">
-        <div><label class="label">Title *</label><input class="input" [ngModel]="formClTitle()" (ngModelChange)="formClTitle.set($event)" placeholder="e.g. Release smoke test" /></div>
-        <div><label class="label">Description</label><textarea class="input" rows="2" [ngModel]="formClDesc()" (ngModelChange)="formClDesc.set($event)" placeholder="What does this checklist verify?"></textarea></div>
+        <div>
+          <label class="label">Title *</label>
+          <input class="input" [ngModel]="formClTitle()" (ngModelChange)="formClTitle.set($event)" placeholder="e.g. Release smoke test" />
+        </div>
+        <div>
+          <label class="label">Description</label>
+          <textarea class="input" rows="2" [ngModel]="formClDesc()" (ngModelChange)="formClDesc.set($event)" placeholder="What does this checklist verify?"></textarea>
+        </div>
+
+        <!-- Inline checkbox item list -->
+        <div>
+          <label class="label">Items</label>
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);overflow:hidden">
+
+            <!-- Committed items -->
+            @for (item of formClItems(); track item.id) {
+              <div style="display:flex;align-items:center;gap:0.625rem;padding:0.5rem 0.75rem;border-bottom:1px solid hsl(var(--border)/0.6)">
+                <div style="flex-shrink:0;width:18px;height:18px;border-radius:3px;border:2px solid hsl(var(--border));background:transparent"></div>
+                <span style="flex:1;font-size:0.875rem">{{ item.title }}</span>
+                <button type="button" style="background:none;border:none;cursor:pointer;padding:0 2px;color:hsl(var(--muted-foreground));line-height:1;display:flex;align-items:center"
+                  (click)="removeDraftItem(item.id)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            }
+
+            <!-- New item input row -->
+            <div style="display:flex;align-items:center;gap:0.625rem;padding:0.5rem 0.75rem">
+              <div style="flex-shrink:0;width:18px;height:18px;border-radius:3px;border:2px solid;transition:border-color 0.15s"
+                   [style.borderColor]="formClItemFocused() ? 'hsl(var(--primary))' : 'hsl(var(--border))'">
+              </div>
+              <input
+                #clItemInput
+                [value]="formClItemDraft()"
+                (input)="formClItemDraft.set($any($event.target).value)"
+                (keydown)="onItemInputKeydown($event)"
+                (focus)="formClItemFocused.set(true)"
+                (blur)="formClItemFocused.set(false)"
+                placeholder="Add an item…"
+                style="flex:1;border:none;outline:none;background:transparent;font-size:0.875rem;padding:0;font-family:inherit;color:inherit"
+              />
+              @if (formClItemFocused() && formClItemDraft().trim()) {
+                <span style="font-size:0.7rem;color:hsl(var(--muted-foreground));white-space:nowrap">Enter ↵</span>
+              }
+            </div>
+          </div>
+        </div>
       </div>
+
       <div class="modal-footer">
         <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
         <button class="btn btn-primary" (click)="submitNewChecklist()" [disabled]="saving()">{{ saving() ? 'Creating…' : 'Create' }}</button>
