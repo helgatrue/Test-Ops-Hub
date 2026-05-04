@@ -74,9 +74,50 @@
         }
       </div>
 
-      <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
-        <input class="input" [ngModel]="itemInput()" (ngModelChange)="itemInput.set($event)" (keydown.enter)="addItem()" placeholder="Add a new item and press Enter..." style="flex:1" />
-        <button class="btn btn-outline" (click)="addItem()">Add</button>
+      <!-- Auto-checkbox textarea input -->
+      <div style="margin-bottom:1rem;border:1.5px solid hsl(var(--border));border-radius:var(--radius);overflow:hidden;transition:border-color 0.15s,box-shadow 0.15s"
+           [style.borderColor]="inputFocused() ? 'hsl(var(--primary))' : 'hsl(var(--border))'"
+           [style.boxShadow]="inputFocused() ? '0 0 0 3px hsl(var(--primary)/0.12)' : 'none'">
+
+        <!-- Label row shown when focused or has content -->
+        @if (inputFocused() || itemInput()) {
+          <div style="padding:0.5rem 0.75rem 0;display:flex;align-items:center;gap:0.375rem;font-size:0.72rem;font-weight:500;color:hsl(var(--primary));letter-spacing:0.03em">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            PRESS ENTER TO ADD ITEM · SHIFT+ENTER FOR NEW LINE
+          </div>
+        }
+
+        <div style="display:flex;align-items:flex-start;gap:0;padding:0.5rem 0.75rem">
+          <!-- Animated checkbox bullet -->
+          <div style="flex-shrink:0;margin-top:0.55rem;margin-right:0.625rem">
+            <div style="width:18px;height:18px;border-radius:3px;border:2px solid;transition:border-color 0.15s"
+                 [style.borderColor]="inputFocused() ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground)/0.35)'">
+            </div>
+          </div>
+          <!-- Auto-growing textarea -->
+          <textarea
+            #itemTextarea
+            [value]="itemInput()"
+            (input)="onInput($event)"
+            (keydown)="onKeydown($event)"
+            (focus)="inputFocused.set(true)"
+            (blur)="inputFocused.set(false)"
+            placeholder="Type an item and press Enter to add it as a checkbox…"
+            rows="1"
+            style="flex:1;border:none;outline:none;resize:none;overflow:hidden;background:transparent;font-size:0.875rem;line-height:1.6;padding:0;color:inherit;min-height:28px;font-family:inherit"
+          ></textarea>
+        </div>
+
+        @if (inputFocused() && itemInput().trim()) {
+          <div style="padding:0.375rem 0.75rem 0.5rem;display:flex;justify-content:flex-end;gap:0.5rem;border-top:1px solid hsl(var(--border)/0.5);background:hsl(var(--muted)/0.3)">
+            <span style="font-size:0.75rem;color:hsl(var(--muted-foreground));align-self:center">
+              Adding: <strong>"{{ itemInput().trim() }}"</strong>
+            </span>
+            <button class="btn btn-primary btn-sm" (click)="addItem()" style="font-size:0.75rem;padding:0.25rem 0.625rem">
+              Add ↵
+            </button>
+          </div>
+        }
       </div>
 
       @if (checklist()!.items.length > 0) {
@@ -104,7 +145,7 @@
         </div>
       } @else {
         <div style="text-align:center;padding:3rem;border:2px dashed hsl(var(--border));border-radius:var(--radius);color:hsl(var(--muted-foreground));font-size:0.875rem">
-          No items yet — add one above to start tracking.
+          No items yet — click above and start typing to add checkboxes.
         </div>
       }
     </div>

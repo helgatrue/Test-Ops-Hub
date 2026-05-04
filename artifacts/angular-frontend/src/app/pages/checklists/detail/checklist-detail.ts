@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -21,6 +21,9 @@ export class ChecklistDetail implements OnInit {
   showEditModal = signal(false);
   editTitle = signal('');
   editDescription = signal('');
+  inputFocused = signal(false);
+
+  @ViewChild('itemTextarea') itemTextarea!: ElementRef<HTMLTextAreaElement>;
 
   constructor(
     private api: ApiService,
@@ -66,6 +69,25 @@ export class ChecklistDetail implements OnInit {
     };
     this.save({ items: [...cl.items, newItem] });
     this.itemInput.set('');
+  }
+
+  onKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.addItem();
+    }
+  }
+
+  onInput(event: Event) {
+    const ta = event.target as HTMLTextAreaElement;
+    this.itemInput.set(ta.value);
+    ta.style.height = 'auto';
+    ta.style.height = Math.max(38, ta.scrollHeight) + 'px';
+  }
+
+  autoResize(ta: HTMLTextAreaElement) {
+    ta.style.height = 'auto';
+    ta.style.height = Math.max(38, ta.scrollHeight) + 'px';
   }
 
   removeItem(id: string) {
@@ -133,7 +155,6 @@ export class ChecklistDetail implements OnInit {
   progressColor() {
     const p = this.progress;
     if (p === 100) return '#16a34a';
-    if (p >= 50) return 'hsl(var(--primary))';
     return 'hsl(var(--primary))';
   }
 }
